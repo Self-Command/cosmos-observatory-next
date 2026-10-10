@@ -24,6 +24,7 @@ export function panelVector(index:number,title:string){
   const document=referenceDocument(),group=[...document.querySelectorAll('g[transform]')].filter(node=>/^translate\(\d+ 940\)$/.test(node.getAttribute('transform')!))[index];
   if(!group)return '';
   const shell=group.cloneNode(true) as Element;shell.removeAttribute('transform');while(shell.children.length>4)shell.lastElementChild!.remove();shell.children[1].textContent=title;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 244 142" preserveAspectRatio="none" aria-hidden="true">${document.querySelector('defs')!.outerHTML}${shell.outerHTML}</svg>`;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 244 142" preserveAspectRatio="none" aria-hidden="true">${document.querySelector('defs')!.outerHTML}${shell.outerHTML}</svg>`;
+  return svg.replace(/id="([^"]+)"/g,`id="panel-${index}-$1"`).replace(/url\(#([^)]*)\)/g,`url(#panel-${index}-$1)`);
 }
 export function spaceVector(){const document=referenceDocument();return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1560 1120" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${document.querySelector('defs')!.outerHTML}<rect width="1560" height="1120" fill="url(#space)"/>${document.querySelector('#decorative-background')!.outerHTML}</svg>`;}

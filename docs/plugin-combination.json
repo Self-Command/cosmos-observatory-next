@@ -37,7 +37,9 @@
       "main.js": "791f62d05857d43085dee8e4738009c7a9d35b1cf3891dfd0c7827ff7344f8e1",
       "styles.css": "eb94063be602679f397e3e35fcb7f6a4b027da82e17c213bb44a267c6b45d8de"
     },
-    "repo": "silentvoid13/Templater"
+    "repo": "silentvoid13/Templater",
+    "sourceCommit": "b74b8dd21d686ca8fb88f11a9709db9487113a17",
+    "sourceArchiveSHA256": "f48d676eff46cc323cc080d87862f792ca25afa6e337cf9f20a733f5e265b9b3"
   },
   {
     "id": "any-block",
@@ -47,7 +49,9 @@
       "main.js": "e1b82494e9ebbc315a5dfbf135fd9a146c9d1aca9b8ee85409499342134d80b8",
       "styles.css": "e0b106ba72fb1aec49a6ecd011f2383c1020dda99d8bd96f3320d8d49d373163"
     },
-    "repo": "any-block/any-block"
+    "repo": "any-block/any-block",
+    "sourceCommit": "fb53d7b00b2f55188ac870201fc81124315f6344",
+    "sourceArchiveSHA256": "7199c90e42442a702b40f37f279fced262cde6850a4b516c105ff61e2b244c32"
   },
   {
     "id": "auto-mover",

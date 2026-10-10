@@ -15,6 +15,6 @@ test('Real 3D folders, independent transforms, shadcn panels and real parser spi
   await page.evaluate(async()=>{await (window as any).fixture.add('新世界');await (window as any).fixture.add('新世界/error.js','const = ;');});await expect(page.getByText('8 世界',{exact:true})).toBeVisible();await expect.poll(()=>page.evaluate(()=>{const fixture=(window as any).fixture,file=fixture.snapshot.files.find((f:any)=>f.path==='新世界/error.js');return fixture.snapshot.results[file.id]?.status;})).toBe('issues');
   await page.evaluate(async()=>{await (window as any).fixture.modify('新世界/error.js','const repaired = 1;');});await expect.poll(()=>page.evaluate(()=>{const fixture=(window as any).fixture,file=fixture.snapshot.files.find((f:any)=>f.path==='新世界/error.js');return fixture.snapshot.results[file.id]?.status;})).toBe('pass');
   await page.screenshot({path:testInfo.outputPath('universe.png')});expect(errors).toEqual([]);
-  await page.goto('/reference.svg');await page.screenshot({path:testInfo.outputPath('original-svg.png'),fullPage:true});
+  const original=await (await page.request.get('/reference.svg')).text();await page.goto('about:blank');await page.setContent(`<html><body style="margin:0">${original}</body></html>`);await page.screenshot({path:testInfo.outputPath('original-svg.png')});
 });
 

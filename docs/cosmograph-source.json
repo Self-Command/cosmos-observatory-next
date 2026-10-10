@@ -2,7 +2,7 @@
   "repository": "https://github.com/n1ghtmare-dev/obsidian-cosmograph",
   "commit": "c455f466f7df9c23724ba291aa9f2463ca553aaa",
   "license": "MIT",
-  "usage": "Full upstream native plugin and spherical rendering base; customization not yet applied",
+  "usage": "Full upstream native plugin and spherical renderer reused; registered framework patches plus WorldScene multi-world adapter, SVG source projection and native host integration",
   "files": [
     {
       "path": ".gitignore",
