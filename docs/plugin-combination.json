@@ -1,0 +1,62 @@
+[
+  {
+    "id": "tasknotes",
+    "version": "4.13.8",
+    "files": {
+      "manifest.json": "c40b0e32365e7fcd793345f5da043d9c5dc325d662c05a4c88690e08cdf452e1",
+      "main.js": "1a5c29976523b18185d51304a1f234857cb9c7782515de00d93ebc58f235fb73",
+      "styles.css": "78b552593f5ebdd3dffdedfe3eee88e05a43e785e82db07660029a788f763546"
+    },
+    "repo": "callumalpass/tasknotes"
+  },
+  {
+    "id": "dataview",
+    "version": "0.5.68",
+    "files": {
+      "manifest.json": "a685ecb2059c88331be693c76d6ae7b9a481fb69a74798f46de54e67a5b516fd",
+      "main.js": "a57da7a9b8ca47d60fea3d97d7956ce1976dd597c3483dfceb254c79a302328b",
+      "styles.css": "d28ecb7c673f70d41105e86f2908cb879deaee4f9b3ff076f4012797da4ff1d6"
+    },
+    "repo": "blacksmithgu/obsidian-dataview"
+  },
+  {
+    "id": "quickadd",
+    "version": "2.12.0",
+    "files": {
+      "manifest.json": "78c94436a0b646561548f6408e63e13a7b6e7f463dcb103b696dc10a75c00907",
+      "main.js": "407a5f5c589be0465622042f79aef85f269317a12577fcd5c6a8c5b0e107c5ed",
+      "styles.css": "7ef7c91c9f7ddb050d55257a87ff055d35cde919672faa1398dc3a066681f994"
+    },
+    "repo": "chhoumann/quickadd"
+  },
+  {
+    "id": "templater-obsidian",
+    "version": "2.25.0",
+    "files": {
+      "manifest.json": "75985188fac8b518eebb791370a24dae1a2476cce3912de4709778dbde0171e4",
+      "main.js": "791f62d05857d43085dee8e4738009c7a9d35b1cf3891dfd0c7827ff7344f8e1",
+      "styles.css": "eb94063be602679f397e3e35fcb7f6a4b027da82e17c213bb44a267c6b45d8de"
+    },
+    "repo": "silentvoid13/Templater"
+  },
+  {
+    "id": "any-block",
+    "version": "3.5.3",
+    "files": {
+      "manifest.json": "b022415b800765bc4bfd36029325346539c901f2adff138642538fe8f3eb7f8a",
+      "main.js": "e1b82494e9ebbc315a5dfbf135fd9a146c9d1aca9b8ee85409499342134d80b8",
+      "styles.css": "e0b106ba72fb1aec49a6ecd011f2383c1020dda99d8bd96f3320d8d49d373163"
+    },
+    "repo": "any-block/any-block"
+  },
+  {
+    "id": "auto-mover",
+    "version": "1.0.10",
+    "files": {
+      "manifest.json": "315bc07b7cf3c26ff2698d49ea630d79d09dca9046d350b7890b617db1811ec4",
+      "main.js": "7b1e1e0f0b065d13f61ab0a4b4328b79c72671d632767395aa101959e1584800",
+      "styles.css": "abf8b5c700eea80ae6ef12cda81bcf90db6f90284baa6c6d70880ea5dd45cade"
+    },
+    "repo": "al0cam/AutoMover"
+  }
+]

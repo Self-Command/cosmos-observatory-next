@@ -16,10 +16,11 @@ export class CosmographView extends UpstreamView {
   override getIcon(){return 'orbit';}
   override async onOpen(){
     this.contentEl.empty();this.contentEl.addClass('cosmos-observatory-host');const host=this.contentEl.createDiv({cls:'cosmos-shadow-host'});const shadow=host.attachShadow({mode:'open'});const style=document.createElement('style');style.textContent=theme;shadow.append(style);const mount=document.createElement('div');mount.className='cosmos-mount';shadow.append(mount);const portal=document.createElement('div');portal.className='cosmos-portal dark';shadow.append(portal);
-    this.engineController=await this.productPlugin.acquireCoordinator();const assetPath=`${this.productPlugin.manifest.dir}/assets/spider.glb`;const spiderURL=this.app.vault.adapter.getResourcePath(assetPath);
+    this.engineController=await this.productPlugin.acquireCoordinator();const assetPath=`${this.productPlugin.manifest.dir}/assets/spider.glb`;const modelBytes=await this.app.vault.adapter.readBinary(assetPath);const spiderURL=URL.createObjectURL(new Blob([modelBytes],{type:'model/gltf-binary'}));this.modelURL=spiderURL;
     this.reactRoot=createRoot(mount);this.reactRoot.render(<PortalContext.Provider value={portal}><Dashboard controller={this.engineController} spiderURL={spiderURL} openFile={path=>{void this.app.workspace.openLinkText(path,'',true);}}/></PortalContext.Provider>);
   }
   override refreshGraph(){void this.engineController?.refresh();}
   override applySettings(){void this.engineController?.refresh();}
-  override async onClose(){this.reactRoot?.unmount();this.reactRoot=undefined;await this.productPlugin.releaseCoordinator();this.engineController=undefined;this.contentEl.empty();}
+  private modelURL:string|undefined;
+  override async onClose(){this.reactRoot?.unmount();this.reactRoot=undefined;if(this.modelURL)URL.revokeObjectURL(this.modelURL);this.modelURL=undefined;await this.productPlugin.releaseCoordinator();this.engineController=undefined;this.contentEl.empty();}
 }

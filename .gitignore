@@ -16,3 +16,5 @@ docs/local-progress.json
 fixtures/private/
 playwright-report/
 test-results/
+artifacts/
+.obsidian-cache/
