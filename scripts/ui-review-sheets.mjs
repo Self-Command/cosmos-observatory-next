@@ -9,7 +9,7 @@ for(let offset=0;offset<images.length;offset+=9){const batch=images.slice(offset
   const filters=batch.map((file,index)=>`[${index}:v]scale=360:240:force_original_aspect_ratio=decrease,pad=360:264:(ow-iw)/2:0:color=0x071018,drawtext=text='${offset+index+1}':x=8:y=244:fontcolor=white:fontsize=16[v${index}]`);
   const layout=batch.map((file,index)=>`${index%3*360}_${Math.floor(index/3)*264}`).join('|');
   const output=`${directory}/surfaces-${String(sheets.length+1).padStart(2,'0')}.png`;
-  filters.push(`${batch.map((file,index)=>`[v${index}]`).join('')}xstack=inputs=${batch.length}:layout=${layout}:fill=0x071018[out]`);
+  filters.push(batch.length===1?'[v0]null[out]':`${batch.map((file,index)=>`[v${index}]`).join('')}xstack=inputs=${batch.length}:layout=${layout}:fill=0x071018[out]`);
   const result=spawnSync('ffmpeg',[...args,'-filter_complex',filters.join(';'),'-map','[out]','-frames:v','1',output],{encoding:'utf8'});if(result.status!==0)throw Error(result.stderr||'UI review sheet failed');
   sheets.push({file:output,images:batch.map((file,index)=>({number:offset+index+1,file}))});
 }

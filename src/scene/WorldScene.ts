@@ -55,6 +55,9 @@ export class WorldScene extends SphericalGraph {
   constructor(canvas:HTMLCanvasElement,settings:Settings,spiderURL:string,private callbacks:SceneCallbacks){
     canvas.getContext('webgl2',{alpha:false,antialias:false,powerPreference:'high-performance'});super(canvas);this.settings=settings;cancelAnimationFrame(this.animationFrame);this.root.visible=false;this.root.rotation.set(0,0,0);this.camera.far=500;this.camera.updateProjectionMatrix();this.glowMaterial.map=this.glowTexture;this.renderer.info.autoReset=false;this.renderer.setClearColor(0x02050c,1);this.scene.background=null;for(const object of this.scene.children)if(object instanceof THREE.Points)object.visible=false;
     this.renderer.debug.onShaderError=(gl,program,vertex,fragment)=>{this.renderFailed=true;console.error('Cosmos material compilation',gl.getProgramInfoLog(program),gl.getShaderInfoLog(vertex),gl.getShaderInfoLog(fragment));this.callbacks.error('三维材质编译失败，请恢复图谱。文件列表与证据仍可使用。');};
+    // File instances already contain world positions and a positive uniform radius.
+    // Keep Lambert lighting and depth, omitting the general shear/rotation path.
+    this.coreMaterial.onBeforeCompile=shader=>{shader.vertexShader=shader.vertexShader.replace('#include <defaultnormal_vertex>','vec3 transformedNormal = normalMatrix * objectNormal;').replace('#include <project_vertex>','vec4 mvPosition=modelViewMatrix*vec4(instanceMatrix[3].xyz+transformed*instanceMatrix[0].x,1.0);gl_Position=projectionMatrix*mvPosition;');};this.coreMaterial.customProgramCacheKey=()=> 'cosmos-uniform-sphere-transform';
     // Keep CosmoGraph's mature bloom pass on a smaller effect surface. Geometry,
     // picking and the main image retain the configured drawing-buffer resolution.
     this.composer.renderToScreen=false;for(const pass of this.composer.passes)if(pass!==this.composer.passes[0]&&pass!==this.bloomPass)pass.enabled=false;
