@@ -1,22 +1,55 @@
-# 执行状态
+# 执行状态与审阅交付
 
-更新时间：2026-10-10。当前工作区：宇宙观测台-next；公开仓库：Self-Command/cosmos-observatory-next。旧资料处理已移出范围。
+更新时间：2026-10-10。公开仓库：Self-Command/cosmos-observatory-next。工作区：宇宙观测台-next；旧资料处理已移出范围。
 
-## 已实现
+当前状态：开发审阅包已生成，最新构建所有 10 项 Actions 任务成功。人工视觉验收、真实库安装、真实来源接入与公开发布尚未进行；包内 BUILD-INFO 的 candidate=false 保留该边界。
 
-完整 CosmoGraph 原生注册、ItemView、vault graph reader、SphericalGraph 底座复用；官方 shadcn/ui＋React＋react-rnd 六面板；真实一级目录发现、文件 SphereGeometry、独立三轴布局；只读 v3 engine 与 18 类实体适配；Babel / YAML 实读巡查、真实 GLB 蜘蛛、扩展发现；鉴权来源接收和公开来源桥接；lowdb 历史、回放和可视化设置。
+## 本轮构建与校验
 
-原 SVG 保持原字节。代码直接解析其世界坐标、颜色、球形节点、点径和分支模板；面板底板、标题、分隔线及背景从原 SVG 提取。统计和真实关系使用实际模型，不使用示例数字。默认原图配色取代早先地球天蓝预设，用户颜色覆写仍优先。
+- 实现提交：`7d9470d6644d126cb76b6a72f3c471971614201f`。
+- [完整 Actions 运行 38038940851](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38038940851)。
+- ZIP SHA-256：`d60e69b009b2b3ac308bdaa1f466ae3d677b76b202aa4a48542cd1bb31c5b009`。
+- 依赖锁 SHA-256：`11df38718c89838e6593f3e7f4776dad1211ec2dc203778ff1d785db140752ff`。
+- 原 SVG SHA-256 保持 `0869ac88be4692aa0568029ff9a8490e16e07a18d8e7eb9969c2ff26bba1bae2`。
+- 插件只编译一次；浏览器、各宿主和最终 ZIP 使用同一份构建，各下游先验证 integrity.json。
 
-## 已核对的 Actions 证据
+本地完整产物保存在 `artifacts/ci-38038940851/`。其中 `package/` 含 ZIP、SHA256SUMS、integrity.json；`build/plugin/BUILD-INFO.json` 含提交和 Actions 来源；`browser/` 含原 SVG、默认视图、交互后视图和录像；`linux/` 含真实 Obsidian 截图、旋转录像和运行时；`combination/` 含六插件实际启用记录；`performance/` 与 `stress/` 含持续测试截图和采样 JSON。Actions 产物保留 2 天，本地副本已保存。
 
-- [上游双系统基线](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38026123444)：Windows / Linux 安装、检查、编译和总门槛通过。
-- [实现验证 ae61544](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38026587514)：质量、类型、单元测试、构建、浏览器交互与截图、Windows Obsidian 1.14.4 / 1.13.7 核心测试通过。
-- 浏览器测试实际验证文件球网格、前后深度、独立整球拖动、内部坐标保持、浮动面板、错误注入和修复。原生 Windows 验证实际 vault、原 engine、蜘蛛模型、重开/改名布局、回放不检查和资源释放。
-- [前一轮压力证据](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38021468330)：浏览器一万文件 / 五千事件 / 十分钟通过。该结果不替代最新构建的压力门槛。
+## 实现与修复
 
-## 当前未通过与剩余工作
+完整 CosmoGraph 原生注册、ItemView、vault graph reader、SphericalGraph 底座复用；React、官方 shadcn/ui 和 react-rnd 六面板；真实一级目录发现、SphereGeometry 文件节点和独立三轴布局；只读 v3 engine 与 18 类实体适配；Babel / YAML 实读巡查、真实 GLB 蜘蛛、扩展发现；鉴权事件接收和公开来源桥接；lowdb 历史、回放和图形设置。
 
-ae61544 的插件组合模型缓存状态和 Linux 原生录像测试失败，当前正在修复。最新浏览器及原生十分钟持续测试结果仍需核对。所有必需任务及打包门槛未全绿，因此尚不称为已完成候选。
+原 SVG 未改写。世界位置、轮廓半径、节点坐标、点径、透明度、辅助路径、轨道与配色直接解析原代码；面板底板、分隔线、标题和顶栏直接克隆原向量元素。原背景代码实际载入 Three 背景纹理，截图等待其载入完成。默认配色沿用 SVG，真实文件数、真实关系和检查结果来自当前模型。
 
-真实知识库未安装新版插件，真实 hooks 未配置，未公开发布安装版本。候选交付将保留同一构建、SHA-256、宿主运行信息、截图/录像和已知限制。
+面板相邻缩放手柄曾重叠：库默认手柄延伸到面板外 10 像素，而默认间距为 8 像素。现将八个手柄收进各自面板；Actions 验证拖动命中、尺寸变化与镜头隔离。面板拖动使用现有 react-rnd，不新增手写拖动引擎。
+
+六插件组合曾因冷启动元数据缓存未就绪而失败。保留必须就绪的断言，并记录缺失缓存数量和运行参数；组合测试在 SwiftShader 中采用 350 节点预算、像素比 1、帧率上限 20，真实启用全部六插件后通过。该配置是组合测试条件，不能据此声称组合下默认预算已通过。
+
+## 最新验证
+
+| Actions 任务 | 结果及实际覆盖 |
+| --- | --- |
+| quality-build | 类型、lint、固定来源 / 隐私边界、17 项单元测试、构建成功 |
+| browser | 2 项集成测试成功：真实球几何和深度、独立整球移动与内部坐标、搜索打开、目录发现、错误及修复、底板基准尺寸、缩放、锁定、最大化恢复、隐藏恢复、焦点与镜头隔离 |
+| Windows 1.13.7 core | 实际 Obsidian 安装、模型就绪、蜘蛛、查错修复、改名与布局、回放和资源释放成功 |
+| Windows 1.14.4 core | 同上；世界与面板布局重开恢复成功 |
+| Linux 1.14.4 core | 同上；实际镜头旋转截图与 FFmpeg 宿主录像成功 |
+| Windows 1.14.4 combination | 固定清单中的 TaskNotes、Dataview、QuickAdd、Templater、AnyBlock、AutoMover 实际启用并通过核心测试 |
+| performance | Chromium / SwiftShader，10,000 文件、5,000 事件、603.073 秒；694 可见节点、401 次新增实查、几何数 2127 → 2130、无页面异常 |
+| Linux 1.14.4 stress | 实际 vault 10,471 文件、5,000 鉴权事件、602.848 秒；344 可见节点、384 次新增实查、几何数 1063 → 1080、无记录错误 |
+| gate | 所有必需任务成功；失败和意外跳过均不能通过 |
+| review-build | 校验后直接打包同一构建，成功 |
+
+1.14.4 宿主记录的运行时：Electron 43.7.7、Chrome 150.0.7871.250、Node 24.21.0。基线流程和来源记录保留于仓库；最新证据以本轮提交为准。
+
+## 已知限制与验收边界
+
+- 本轮自动化使用合成数据与 Actions 软件渲染。真实私人库、用户显卡和日常插件设置未测试；不承诺运行帧率。十分钟压力样本的浏览器平均约 2.3 帧/秒，原生宿主约 3.3 帧/秒。
+- 原生压力进程 JS 堆采样约 299 → 760 MiB，中间有回落；该流程验证持续运行、显示 / 事件预算与几何资源增长，尚不足以证明长期内存稳定。
+- 源码复用已验证，真实文件数量与内容会改变节点、连线、统计和空态。三维旋转和用户拖动也会改变投影；人工像素级视觉审阅尚未完成。
+- 面板自动测试直接覆盖右下角缩放及共同状态流程，其他七个手柄、长标题、多显示器、高 DPI 和所有窄屏组合没有逐项人工验收。不能将 CI 全绿解释为计划中每条人工场景均已完成。
+- v3 引擎保持只读，变更引擎不会执行；未知业务范围和不支持的解析类型显示未评估。合法孤立与循环关系不自动记为错误。
+- 接收默认关闭。Codex 需要用户客户端转发公开 App Server 通知；现有桌面会话没有自动接入。Claude hook 与真实 token 均未配置。
+- 私人笔记、会话、凭据与插件 data.json 未进入公开仓库；测试组合插件不进入产品 ZIP。没有新增大模型调用。
+
+安装、设置和卸载方式见 [使用指南](USER-GUIDE.md)，来源契约见 [接入说明](SOURCE-INTEGRATIONS.md)，实现和来源见 [架构](ARCHITECTURE.md)、[SVG 复用](SVG-REUSE.md) 与 [第三方说明](THIRD-PARTY-NOTICES.md)。候选可审阅后再落实真实库安装和来源接通。
