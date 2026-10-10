@@ -66,29 +66,29 @@
       "name": "select",
       "url": "https://raw.githubusercontent.com/shadcn-ui/ui/2d3f1cd436b18ea12f24130de4df781355925b08/apps/v4/registry/new-york-v4/ui/select.tsx",
       "originalSHA256": "962830436bd0b7ee50e556f0747e277d6a86869ed27d167516346b15f26309d8",
-      "customizedSHA256": "a25676a80cb8ea9b90a1daad062dbbd84cafba68d72dd868f390c3bf487e230c"
+      "customizedSHA256": "8644a343146b23a23448ea5aa223ef62f0837aca51d28de8a1a378eb0481f715"
     },
     {
       "name": "tooltip",
       "url": "https://raw.githubusercontent.com/shadcn-ui/ui/2d3f1cd436b18ea12f24130de4df781355925b08/apps/v4/registry/new-york-v4/ui/tooltip.tsx",
       "originalSHA256": "611e4305879b2773eafe76bf3c5caa69d8e47367fd97887a71634a27828f4433",
-      "customizedSHA256": "345bc589a285ece3622bf18f4c842107836cf6fc8a9055b0a604db0cf6c83551"
+      "customizedSHA256": "c2ee7888fbfc58fe74dbe9444325233c29074d9b940e4b8ec58759355a152363"
     },
     {
       "name": "dropdown-menu",
       "url": "https://raw.githubusercontent.com/shadcn-ui/ui/2d3f1cd436b18ea12f24130de4df781355925b08/apps/v4/registry/new-york-v4/ui/dropdown-menu.tsx",
       "originalSHA256": "d954efb735f13734751207ad22cb0cddd7f6ec53c59d16675d103dae08cb61fb",
-      "customizedSHA256": "c84b54bc6c8ae8f3ec5a8999000623b25776318739f2e91de3c70d85bb56e95a"
+      "customizedSHA256": "9955f05ef0526534656b04d85f2d05861fe691d7668c7335806d3627d359e324"
     },
     {
       "name": "sheet",
       "url": "https://raw.githubusercontent.com/shadcn-ui/ui/2d3f1cd436b18ea12f24130de4df781355925b08/apps/v4/registry/new-york-v4/ui/sheet.tsx",
       "originalSHA256": "ea473d38a26a9b0b879e5a13139899ad45e9782e896b3fa205c7763a6c506876",
-      "customizedSHA256": "1431af1f2a0f4cd2623cf888241715fa312db1bc54af038d4518b0130b136993"
+      "customizedSHA256": "07f0afa3ee65c34758489b86daec675349aa60f3a8f65a8261d471b11a1f37b5"
     }
   ],
   "patches": [
     "Import path adaptation",
-    "Dialog portal scoped to current Obsidian shadow view"
+    "Dialog, Sheet, Select, DropdownMenu and Tooltip portals scoped to current Obsidian shadow view"
   ]
 }

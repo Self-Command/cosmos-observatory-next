@@ -1,3 +1,4 @@
+import { usePortalContainer } from "@/ui/PortalContext"
 "use client"
 
 import * as React from "react"
@@ -15,7 +16,7 @@ function DropdownMenuPortal({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>) {
   return (
-    <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />
+    <DropdownMenuPrimitive.Portal container={usePortalContainer()} data-slot="dropdown-menu-portal" {...props} />
   )
 }
 
@@ -36,7 +37,7 @@ function DropdownMenuContent({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
   return (
-    <DropdownMenuPrimitive.Portal>
+    <DropdownMenuPrimitive.Portal container={usePortalContainer()}>
       <DropdownMenuPrimitive.Content
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}

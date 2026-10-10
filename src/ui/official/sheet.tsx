@@ -1,3 +1,4 @@
+import { usePortalContainer } from "@/ui/PortalContext"
 "use client"
 
 import * as React from "react"
@@ -24,7 +25,7 @@ function SheetClose({
 function SheetPortal({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Portal>) {
-  return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
+  return <SheetPrimitive.Portal container={usePortalContainer()} data-slot="sheet-portal" {...props} />
 }
 
 function SheetOverlay({
