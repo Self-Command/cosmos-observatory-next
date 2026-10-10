@@ -15,7 +15,7 @@ export class FixtureController implements Controller {
   }
   get settings(){return validateSettings(this.state.settings);}
   subscribe=(callback:()=>void)=>{this.callbacks.add(callback);return()=>this.callbacks.delete(callback);};getSnapshot=()=>this.snapshot;
-  getLayoutState=():SpatialState=>this.replayFrame?.space??{worlds:this.replayFrame?{}:this.state.worlds,panels:this.replayFrame?{}:this.state.panels,nodes:this.replayFrame?{}:this.state.nodes??{},revision:this.state.layoutRevision??0};
+  getLayoutState=():SpatialState=>this.replayFrame?.space??{worlds:this.replayFrame?{}:{...this.observedWorlds,...this.state.worlds},panels:this.replayFrame?{}:this.state.panels,nodes:this.replayFrame?{}:this.state.nodes??{},revision:this.state.layoutRevision??0};
   getWorldLayout=(id:string)=>this.replayFrame?this.replayFrame.space?.worlds[id]:this.state.worlds[id]??this.observedWorlds[id];
   private emit(){this.realtime={...this.realtime};this.callbacks.forEach(callback=>callback());}
   event(input:Omit<ObservatoryEvent,'id'|'at'>&Partial<Pick<ObservatoryEvent,'id'|'at'>>){const event={...input,id:input.id??crypto.randomUUID(),at:input.at??Date.now()} as ObservatoryEvent;if(this.realtime.events.some(previous=>previous.id===event.id&&previous.source===event.source&&previous.sessionId===event.sessionId))return;this.realtime={...this.realtime,events:[...this.realtime.events,event].slice(-Number(this.settings.eventLimit))};this.emit();}

@@ -40,7 +40,7 @@ export class Coordinator {
   get settings(){if(this.settingsInput!==this.state.settings){this.settingsInput=this.state.settings;this.settingsCache=validateSettings(this.state.settings);}return this.settingsCache;}
   subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>this.listeners.delete(listener);};
   getSnapshot=()=>this.snapshot;
-  getLayoutState=():SpatialState=>this.replaySnapshot?.space??{worlds:this.replaySnapshot?{}:this.state.worlds,panels:this.replaySnapshot?{}:this.state.panels,nodes:this.replaySnapshot?{}:this.state.nodes??{},revision:this.state.layoutRevision??0};
+  getLayoutState=():SpatialState=>this.replaySnapshot?.space??{worlds:this.replaySnapshot?{}:{...this.observedWorlds,...this.state.worlds},panels:this.replaySnapshot?{}:this.state.panels,nodes:this.replaySnapshot?{}:this.state.nodes??{},revision:this.state.layoutRevision??0};
   getWorldLayout=(id:string)=>this.replaySnapshot?this.replaySnapshot.space?.worlds[id]:this.state.worlds[id]??this.observedWorlds[id];
   private emit(){if(!this.stopped)this.notify();}
   private report(message:string){this.realtime={...this.realtime,error:message};this.emit();}
