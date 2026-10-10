@@ -25,8 +25,8 @@ export class WorldScene extends SphericalGraph {
   private worlds=new Map<string,WorldVisual>();private files=new Map<string,FileVisual>();private order:FileVisual[]=[];private snapshot:Snapshot|undefined;private settings:Settings;
   private orbit:OrbitControls;private transform:TransformControls;private drag:DragControls;private physics:PhysicsClient;
   private coreBatch:THREE.InstancedMesh|undefined;private glowBatch:THREE.InstancedMesh|undefined;private hitBatch:THREE.InstancedMesh|undefined;
-  private sphereGeometry=new THREE.SphereGeometry(1,8,6);private glowGeometry=new THREE.PlaneGeometry(2,2);private hitGeometry=new THREE.SphereGeometry(1,8,6);private worldAuraGeometry:THREE.BufferGeometry|undefined;
-  private coreMaterial=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:.18,roughness:.65,metalness:.1,transparent:true,opacity:.84});
+  private sphereGeometry=new THREE.SphereGeometry(1,6,4);private glowGeometry=new THREE.PlaneGeometry(2,2);private hitGeometry=new THREE.SphereGeometry(1,6,4);private worldAuraGeometry:THREE.BufferGeometry|undefined;
+  private coreMaterial=new THREE.MeshLambertMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:.18,transparent:true,opacity:.84});
   private glowMaterial=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.24,depthWrite:false,blending:THREE.AdditiveBlending});
   private hitMaterial=new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false});
   private dragProxy=new THREE.Mesh(new THREE.SphereGeometry(.3,12,8),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}));
@@ -100,7 +100,7 @@ export class WorldScene extends SphericalGraph {
     this.physics.pause(!!this.settings.animationPaused||!!this.settings.reducedMotion||this.reducedMotion||snapshot.replay,Number(this.settings.physicsFps));this.updateInstances();
   }
   private createWorld(descriptor:WorldDescriptor,layout:WorldLayout):WorldVisual{
-    const group=new THREE.Group();group.position.fromArray(layout.position);group.rotation.fromArray(layout.rotation);this.scene.add(group);const aura=this.outerAura.clone();aura.geometry=this.worldAuraGeometry??=this.createTerrainGeometry(48,32);aura.material=this.outerAura.material.clone();aura.material.depthTest=true;this.animatedMaterials.push(aura.material);group.add(aura);
+    const group=new THREE.Group();group.position.fromArray(layout.position);group.rotation.fromArray(layout.rotation);this.scene.add(group);const aura=this.outerAura.clone();aura.geometry=this.worldAuraGeometry??=this.createTerrainGeometry(32,16);aura.material=this.outerAura.material.clone();aura.material.depthTest=true;this.animatedMaterials.push(aura.material);group.add(aura);
     const title=document.createElement('button');title.className='world-label';title.type='button';title.addEventListener('click',event=>{event.stopPropagation();this.selectWorld(descriptor.id);},{signal:this.abort.signal});title.addEventListener('pointerdown',event=>event.stopPropagation(),{signal:this.abort.signal});const label=new CSS2DObject(title);group.add(label);
     const anchor=new THREE.Mesh(new THREE.SphereGeometry(.17,16,12),new THREE.MeshBasicMaterial({color:descriptor.color,transparent:true,opacity:.3}));anchor.position.copy(group.position);this.scene.add(anchor);
     const reference=shapeReferences().get(descriptor.name),orbits=new THREE.Group(),templates=reference?.orbits??[{rx:1,ry:.3,angle:-12,opacity:.07},{rx:.38,ry:1,angle:-23,opacity:.05}];

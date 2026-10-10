@@ -63,9 +63,9 @@ export class Coordinator {
     this.patrol.configure(this.settings);this.patrol.start();await this.configureReceiver();this.configureHistory();
   }
   private changed(action:string,filePath:string,fileId=this.state.identities[filePath],previousPath?:string){if(filePath.startsWith(this.app.vault.configDir+'/plugins/cosmos-observatory-next/'))return;this.event({kind:'file',source:'obsidian.vault',action,path:filePath,previousPath,fileId,status:'success',evidence:'Vault 事件；无智能体归因'});this.refreshDebounced();}
-  private eventKey(event:Pick<ObservatoryEvent,'source'|'sessionId'|'id'>){return `${event.source}:${event.sessionId??''}:${event.id}`;}
+  private eventKey(event:Pick<ObservatoryEvent,'source'|'sessionId'|'id'>){return JSON.stringify([event.source,event.sessionId??'',event.id]);}
   event(input:Omit<ObservatoryEvent,'id'|'at'> & Partial<Pick<ObservatoryEvent,'id'|'at'>>){
-    if(this.stopped||(input.path&&!pathFilter(this.settings)(input.path)))return;const event={...input,id:input.id??crypto.randomUUID(),at:input.at??Date.now()} as ObservatoryEvent,key=this.eventKey(event);if(this.seenEvents.has(key))return;
+    if(this.stopped||(input.path&&!pathFilter(this.settings)(input.path)))return;const file=input.fileId?this.realtime.files.find(file=>file.id===input.fileId):this.realtime.files.find(file=>file.path===input.path),worldId=input.worldId!==undefined?input.worldId:file?.worldId??(input.path?.includes('/')?this.realtime.worlds.find(world=>input.path!.startsWith(world.path+'/'))?.id:null);const event={...input,...(worldId!==undefined?{worldId}:{}),id:input.id??crypto.randomUUID(),at:input.at??Date.now()} as ObservatoryEvent,key=this.eventKey(event);if(this.seenEvents.has(key))return;
     this.seenEvents.add(key);while(this.seenEvents.size>Number(this.settings.eventLimit)*2)this.seenEvents.delete(this.seenEvents.values().next().value!);
     const events=[...this.realtime.events,event].slice(-Number(this.settings.eventLimit));
     this.realtime={...this.realtime,events};this.updateSources();this.logger?.info({kind:event.kind,action:event.action,status:event.status},'observation');this.emit();
