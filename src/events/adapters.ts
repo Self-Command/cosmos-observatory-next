@@ -19,6 +19,6 @@ export function adaptCodex(input:Record<string,any>,vault:string,sequence:number
   const item=params.item,session=params.threadId,run=params.turnId;if(typeof session!=='string'||typeof run!=='string'||session.length>128||run.length>128)return [];
   const toolTypes=['fileChange','commandExecution','mcpToolCall','dynamicToolCall'];if(!toolTypes.includes(item.type))return [];
   const completed=method==='item/completed',result=completed?status(item.status):'unknown';
-  const files=item.type==='fileChange'&&completed?Array.isArray(item.changes)?item.changes.map((change:any)=>target(vault,change.path)).filter(Boolean):[]:[];
+  const files:string[]=item.type==='fileChange'&&completed?Array.isArray(item.changes)?item.changes.map((change:any)=>target(vault,change.path)).filter((file:unknown):file is string=>typeof file==='string'):[]:[];
   return (files.length?files:[undefined]).map((file,index)=>({id:createHash('sha256').update(`${session}:${run}:${item.id}:${method}:${index}`).digest('hex'),at,source:'codex-public-api',sessionId:session,runId:run,sequence:sequence+index,action:file?'modify':completed?'tool.end':'tool.start',status:result,...(file?{path:file}:{})}));
 }
