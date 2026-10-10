@@ -75,7 +75,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y xvfb libasound2t64 ffmpeg fonts-noto-cjk
       - name: Verify native host (Linux)
         if: runner.os == 'Linux'
-        run: xvfb-run -a npm run host
+        run: xvfb-run -a --server-args="-screen 0 1600x1120x24" bash scripts/run-native-linux.sh
       - name: Verify native host (Windows)
         if: runner.os == 'Windows'
         run: npm run host

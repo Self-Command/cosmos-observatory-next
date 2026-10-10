@@ -18,7 +18,7 @@ flowchart LR
   E --> S
 ```
 
-WorldScene 直接继承 CosmoGraph.SphericalGraph，保留上游场景、后处理、背景、文件球材质、标签和拾取。世界对应真实一级目录，一个独立 Three Group 包含文件小球、目录辅助线和轨道。没有实际文件时不添加假文件。默认布局参考 SVG 的分散位置，配置按稳定世界 ID 保存；新增世界不重排已保存世界。
+WorldScene 直接继承 CosmoGraph.SphericalGraph，保留上游场景、后处理、背景、文件球材质、标签和拾取。世界对应真实一级目录，一个独立 Three Group 包含文件小球、目录辅助线和轨道。没有实际文件时不添加假文件。默认布局直接解析原 SVG 的世界位置、轮廓、点径与分支模板，并用三维深度投影为真实文件球，配置按稳定世界 ID 保存；新增世界不重排已保存世界。
 
 小球使用 SphereGeometry 和有光照的原材质定制；真实球面与径向层次对应文件数，中心优先绑定实际索引。OrbitControls 操作镜头，TransformControls 提供 XYZ 平移与旋转，DragControls 移动整组。LineSegments2 提供真正可调的像素线宽，真实关系端点每帧从文件的世界坐标更新。辅助线不进入关系统计。
 

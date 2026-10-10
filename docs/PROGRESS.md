@@ -1,35 +1,22 @@
 # 执行状态
 
-更新时间：2026-10-10。
+更新时间：2026-10-10。当前工作区：宇宙观测台-next；公开仓库：Self-Command/cosmos-observatory-next。旧资料处理已移出范围。
 
-## 已完成
+## 已实现
 
-- 新工程独立初始化，无旧实现或 Git 历史迁移。
-- 新开发仓库 `Self-Command/cosmos-observatory-next` 已改为公开。
-- 原始参考 SVG 和已批准计划已转存至新目录，SVG 哈希保持一致。
-- CosmoGraph 固定版本完整源码已从原始来源取得，未从旧工程复制。
-- 旧插件已从启用清单中移除；其他插件清单项保留。
-- 旧私有仓库的 Actions 已禁用，查询时没有正在执行的工作流。
-- 用户已手动清理旧主工程的代码；核对时该目录剩余 `docs` 与隐藏 `.git`。旧 docs 可以删除，新工程不再以旧文档为开发依据。
-- Windows 和 Linux 的上游锁定依赖安装、vault 适配测试、类型检查和原生插件编译已在 Actions 通过；Linux 网页验证入口也编译通过。
+完整 CosmoGraph 原生注册、ItemView、vault graph reader、SphericalGraph 底座复用；官方 shadcn/ui＋React＋react-rnd 六面板；真实一级目录发现、文件 SphereGeometry、独立三轴布局；只读 v3 engine 与 18 类实体适配；Babel / YAML 实读巡查、真实 GLB 蜘蛛、扩展发现；鉴权来源接收和公开来源桥接；lowdb 历史、回放和可视化设置。
 
-## 待核实与受阻的清理
+原 SVG 保持原字节。代码直接解析其世界坐标、颜色、球形节点、点径和分支模板；面板底板、标题、分隔线及背景从原 SVG 提取。统计和真实关系使用实际模型，不使用示例数字。默认原图配色取代早先地球天蓝预设，用户颜色覆写仍优先。
 
-- 工具的自动审批审核再次拒绝了已核验路径的单项 PowerShell 删除，原因仅为 `blocked by policy`。没有执行删除，也没有通过其他方式绕过审核。
-- 核对时 `prompt-spider-observatory` 及旧插件专属目录仍存在。旧主工程的隐藏 `.git` 仍存在。
-- 旧远端仓库仍存在；当前凭据没有 `delete_repo` 权限，删除 API 返回 HTTP 403。旧仓库保持私有，避免旧数据公开。
+## 已核对的 Actions 证据
 
-## 当前工程阶段
+- [上游双系统基线](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38026123444)：Windows / Linux 安装、检查、编译和总门槛通过。
+- [实现验证 ae61544](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38026587514)：质量、类型、单元测试、构建、浏览器交互与截图、Windows Obsidian 1.14.4 / 1.13.7 核心测试通过。
+- 浏览器测试实际验证文件球网格、前后深度、独立整球拖动、内部坐标保持、浮动面板、错误注入和修复。原生 Windows 验证实际 vault、原 engine、蜘蛛模型、重开/改名布局、回放不检查和资源释放。
+- [前一轮压力证据](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38021468330)：浏览器一万文件 / 五千事件 / 十分钟通过。该结果不替代最新构建的压力门槛。
 
-M0：公开仓库工程初始化及上游 CosmoGraph 基线复现。首个源码提交 `7836727` 的 [Actions 证据](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38010329140) 已核验，两个系统的必需基线任务及总门槛均成功。
+## 当前未通过与剩余工作
 
-该结果只证明原始底座可安装依赖、通过上游测试并编译。新版多球、shadcn/ui 面板和真实蜘蛛尚未实现；未进行真实 Obsidian 宿主验收。不能将此基线记录当作新插件完成结果。
+ae61544 的插件组合模型缓存状态和 Linux 原生录像测试失败，当前正在修复。最新浏览器及原生十分钟持续测试结果仍需核对。所有必需任务及打包门槛未全绿，因此尚不称为已完成候选。
 
-## 后续工作
-
-- Actions 固定依赖锁并取得官方 shadcn/ui 组件。
-- 在原生宿主中定制多世界渲染、真实文件节点、独立球体控制与浮动六面板。
-- 接通只读模型适配、真实巡查、扩展发现、来源契约、历史与可视化设置。
-- 完成浏览器和真实 Obsidian 矩阵、性能恢复及审批候选。
-
-尚未安装新版插件、配置新 hook 或发布候选。上游基线通过不代表以上功能已实现。
+真实知识库未安装新版插件，真实 hooks 未配置，未公开发布安装版本。候选交付将保留同一构建、SHA-256、宿主运行信息、截图/录像和已知限制。

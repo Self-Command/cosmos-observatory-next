@@ -28,12 +28,11 @@ describe('Real Obsidian native plugin',()=>{
     const layout=await browser.executeObsidian(({app},id)=>app.plugins.plugins['cosmos-observatory-next'].coordinator.state.worlds[id],saved.id);assert.deepEqual(layout.position,[9,4,-7]);assert.deepEqual(layout.rotation,[.2,.4,.6]);assert.equal(layout.locked,true);
     await browser.executeObsidian(async({app,require})=>{await app.vault.rename(app.vault.getAbstractFileByPath('地球改名'),'地球');const c=app.plugins.plugins['cosmos-observatory-next'].coordinator;await c.updateWorld(c.snapshot.worlds.find(w=>w.id===Object.keys(c.state.worlds).find(id=>c.state.worlds[id].locked)).id,{locked:false});});
     if(process.platform==='linux'){
-      const puppeteer=await browser.getPuppeteer(),pages=await puppeteer.pages(),page=pages.find(p=>p.url().startsWith('app://'))??pages[0];
-      const recorder=await page.screencast({path:'test-results/host/native-rotation.webm',fps:15,scale:.75});
+      console.log('native-video connecting');const puppeteer=await browser.getPuppeteer(),pages=await puppeteer.pages(),page=pages.find(p=>p.url().startsWith('app://'))??pages[0];
       await browser.executeObsidian(async({app,require})=>{const c=app.plugins.plugins['cosmos-observatory-next'].coordinator;await c.updateSettings({animationPaused:false,patrolPaused:false});});
       const rect=await browser.executeObsidian(({app,require})=>{const r=document.querySelector('.cosmos-shadow-host').shadowRoot.querySelector('canvas').getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};});
       for(const [dx,dy] of [[130,0],[0,90],[-160,-60]]){await page.mouse.move(rect.x+rect.width*.55,rect.y+rect.height*.45);await page.mouse.down();await page.mouse.move(rect.x+rect.width*.55+dx,rect.y+rect.height*.45+dy,{steps:35});await page.mouse.up();await browser.pause(1200);}
-      await browser.saveScreenshot('test-results/host/native-rotated.png');await recorder.stop();
+      await browser.saveScreenshot('test-results/host/native-rotated.png');console.log('native-rotation complete; desktop recording managed by Actions FFmpeg');
     }
     await browser.executeObsidian(({app,require})=>{for(const leaf of app.workspace.getLeavesOfType('cosmos-observatory-next-view'))leaf.detach();});
   });
