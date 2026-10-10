@@ -20,6 +20,7 @@ jobs:
         with: {node-version: '22'}
       - run: npm ci --no-audit --no-fund
       - run: npm run check
+      - run: npx eslint src tests
       - run: npm test
       - name: Build once for every downstream test
         run: npm run build
@@ -49,12 +50,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {os: windows-latest, version: '1.14.4'}
-          - {os: windows-latest, version: '1.13.7'}
-          - {os: ubuntu-latest, version: '1.14.4'}
+          - {os: windows-latest, version: '1.14.4', profile: core}
+          - {os: windows-latest, version: '1.13.7', profile: core}
+          - {os: ubuntu-latest, version: '1.14.4', profile: core}
+          - {os: windows-latest, version: '1.14.4', profile: combination}
     runs-on: ${{ matrix.os }}
     env:
       OBSIDIAN_VERSION: ${{ matrix.version }}
+      HOST_PROFILE: ${{ matrix.profile }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -64,9 +67,11 @@ jobs:
         with: {name: immutable-build, path: dist/}
       - run: node scripts/verify-build.mjs
       - run: node scripts/fixtures.mjs
+      - run: node scripts/plugin-combination.mjs
+        if: matrix.profile == 'combination'
       - name: Install Linux host display dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y xvfb libasound2t64
+        run: sudo apt-get update && sudo apt-get install -y xvfb libasound2t64 ffmpeg
       - name: Verify native host (Linux)
         if: runner.os == 'Linux'
         run: xvfb-run -a npm run host
@@ -76,11 +81,29 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: host-${{ matrix.os }}-${{ matrix.version }}
+          name: host-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.profile }}
           path: test-results/host/
           retention-days: 2
+  performance:
+    needs: quality-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env: {STRESS: 'true'}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '22'}
+      - run: npm ci --no-audit --no-fund
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with: {name: immutable-build, path: dist/}
+      - run: node scripts/verify-build.mjs
+      - run: npx playwright install --with-deps chromium
+      - run: npm run browser
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with: {name: performance-evidence, path: test-results/, retention-days: 2}
   gate:
-    needs: [quality-build, browser, host]
+    needs: [quality-build, browser, host, performance]
     if: always()
     runs-on: ubuntu-latest
     steps:

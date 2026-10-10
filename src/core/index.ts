@@ -2,7 +2,7 @@ import { semanticPresets, splitList, type Settings } from './settings';
 import type { FileDescriptor, RelationDescriptor, WorldDescriptor, PersistentState } from './types';
 export interface RawEntry { path:string; name:string; extension?:string; mtime?:number; size?:number; cacheReady?:boolean; properties?:Record<string,unknown> }
 export interface VaultProjection { entries:RawEntry[]; links:Record<string,Record<string,number>>; resolve:(link:string,from:string)=>string|undefined }
-export function identity(state:PersistentState,path:string){return state.identities[path]??(state.identities[path]=crypto.randomUUID());}
+export function identity(state:PersistentState,path:string){return Object.hasOwn(state.identities,path)?state.identities[path]:(state.identities[path]=crypto.randomUUID());}
 export function renameIdentity(state:PersistentState,oldPath:string,newPath:string){
   for(const path of Object.keys(state.identities)) if(path===oldPath || path.startsWith(oldPath+'/')){state.identities[newPath+path.slice(oldPath.length)]=state.identities[path];delete state.identities[path];}
 }
@@ -24,7 +24,7 @@ export function projectVault(input:VaultProjection,state:PersistentState,setting
     const parts=entry.path.split('/').slice(0,-1);
     let asset:FileDescriptor['asset'];
     if(splitList(settings.templates).some(prefix=>parts.some(p=>p.toLowerCase().includes(prefix.toLowerCase()))))asset='template';
-    else if(['js','ts','mjs','cjs','tsx','jsx','py','ps1','sh'].includes(extension))asset='script';
+    else if(['js','ts','mjs','cjs','tsx','jsx','py','ps1','sh'].includes(extension)||splitList(settings.scripts).some(prefix=>parts.some(p=>p.toLowerCase().includes(prefix.toLowerCase()))))asset='script';
     if(entry.path===String(settings.schemaPath)||entry.path===String(settings.enginePath))asset='model';
     const id=identity(state,entry.path);world.count++;
     return [{id,path:entry.path,name:entry.name,extension,worldId:world.id,version:`${entry.mtime??0}:${entry.size??0}`,size:entry.size??0,cacheReady:entry.cacheReady??extension!=='md',asset}];

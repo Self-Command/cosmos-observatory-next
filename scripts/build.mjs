@@ -9,12 +9,14 @@ await mkdir('dist/plugin/assets',{recursive:true});await mkdir('dist/harness',{r
 const cssText=await readFile('src/ui/theme.css','utf8');const compiled=await postcss([tailwind()]).process(cssText,{from:'src/ui/theme.css'});
 const cssPlugin={name:'compiled-isolated-theme',setup(build){build.onLoad({filter:/theme\.css$/},()=>({contents:`export default ${JSON.stringify(compiled.css)}`,loader:'js'}));}};
 await build({entryPoints:['src/main.ts'],outfile:'dist/plugin/main.js',bundle:true,platform:'node',format:'cjs',target:'es2022',external:['obsidian','electron',...builtinModules,...builtinModules.map(name=>'node:'+name)],plugins:[cssPlugin],loader:{'.css':'text'},minify:true,legalComments:'eof'});
+await build({entryPoints:['src/events/bridge.ts'],outfile:'dist/plugin/bridge.mjs',bundle:true,platform:'node',format:'esm',target:'es2022',external:[...builtinModules,...builtinModules.map(name=>'node:'+name)],minify:true,legalComments:'eof'});
 await build({entryPoints:['tests/harness/main.tsx'],outfile:'dist/harness/main.js',bundle:true,platform:'browser',format:'esm',target:'es2022',plugins:[cssPlugin],minify:true,legalComments:'eof'});
 for(const file of ['manifest.json','styles.css'])await cp(file,`dist/plugin/${file}`);
 await cp('assets/spider.glb','dist/plugin/assets/spider.glb');await cp('assets/spider.glb','dist/harness/spider.glb');
 await cp('tests/harness/index.html','dist/harness/index.html');await cp('vendor/cosmograph/LICENSE','dist/plugin/COSMOGRAPH-LICENSE');await cp('src/ui/official/LICENSE.md','dist/plugin/SHADCN-LICENSE.md');
+await cp('docs/assets/dashboard-spheres-v2.svg','dist/harness/reference.svg');
 await cp('LICENSE','dist/plugin/LICENSE');
 await writeFile('dist/plugin/THIRD-PARTY-NOTICES.md',await readFile('docs/THIRD-PARTY-NOTICES.md'));
 const provenance={commit:process.env.GITHUB_SHA,run:`https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,builtOnce:true,lockSHA256:createHash('sha256').update(await readFile('package-lock.json')).digest('hex'),cosmograph:'c455f466f7df9c23724ba291aa9f2463ca553aaa',candidate:false};
 await writeFile('dist/plugin/BUILD-INFO.json',JSON.stringify(provenance,null,2));
-const integrity={};for(const file of ['main.js','manifest.json','styles.css','assets/spider.glb','BUILD-INFO.json'])integrity[file]=createHash('sha256').update(await readFile(`dist/plugin/${file}`)).digest('hex');await writeFile('dist/integrity.json',JSON.stringify(integrity,null,2));
+const integrity={};for(const file of ['main.js','bridge.mjs','manifest.json','styles.css','assets/spider.glb','BUILD-INFO.json'])integrity[file]=createHash('sha256').update(await readFile(`dist/plugin/${file}`)).digest('hex');await writeFile('dist/integrity.json',JSON.stringify(integrity,null,2));

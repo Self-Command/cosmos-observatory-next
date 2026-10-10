@@ -1,9 +1,10 @@
 import { test,expect } from '@playwright/test';
 test('Real 3D folders, independent transforms, shadcn panels and real parser spider',async({page},testInfo)=>{
-  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));await page.goto('/');await expect(page.getByText('245 文件',{exact:true})).toBeVisible();
+  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();
   await expect(page.locator('canvas').first()).toBeVisible();await expect.poll(()=>page.evaluate(()=>{const canvas=document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any;return canvas.__cosmosScene?.debug().spiderLoaded;})).toBe(true);
-  const initial=await page.evaluate(()=>((document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any).__cosmosScene.debug()));expect(initial.positions.length).toBe(245);expect(initial.positions.every((p:any)=>p.geometry==='SphereGeometry')).toBe(true);expect(new Set(initial.positions.map((p:any)=>Math.round(p.local[2]*100))).size).toBeGreaterThan(10);expect(initial.edgeVertices).toBeGreaterThan(0);
+  const initial=await page.evaluate(()=>((document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any).__cosmosScene.debug()));expect(initial.positions.length).toBe(630);expect(initial.positions.every((p:any)=>p.geometry==='SphereGeometry')).toBe(true);expect(new Set(initial.positions.map((p:any)=>Math.round(p.local[2]*100))).size).toBeGreaterThan(10);expect(initial.edgeVertices).toBeGreaterThan(0);
   await expect.poll(()=>page.locator('.graph-label:visible').count()).toBeLessThan(28);
+  await page.screenshot({path:testInfo.outputPath('default-universe.png')});
   await page.getByRole('button',{name:'打开设置'}).click();await expect(page.getByRole('dialog')).toBeVisible();await page.getByRole('tab',{name:'独立世界',exact:true}).click();const earth=await page.evaluate(()=>{const fixture=(window as any).fixture;return fixture.snapshot.worlds.find((w:any)=>w.name==='地球').id;});await page.getByLabel('地球 position X').fill('8');await page.getByRole('button',{name:'Close',exact:true}).click();await expect.poll(()=>page.evaluate(id=>(window as any).fixture.state.worlds[id].position[0],earth)).toBe(8);
   await page.getByRole('button',{name:'排版 关闭',exact:true}).click();await page.evaluate(id=>{const scene=(document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any).__cosmosScene;scene.selectWorld(id);},earth);
   await page.evaluate(async()=>{await (window as any).fixture.updateSettings({animationPaused:true});});
@@ -14,4 +15,6 @@ test('Real 3D folders, independent transforms, shadcn panels and real parser spi
   await page.evaluate(async()=>{await (window as any).fixture.add('新世界');await (window as any).fixture.add('新世界/error.js','const = ;');});await expect(page.getByText('8 世界',{exact:true})).toBeVisible();await expect.poll(()=>page.evaluate(()=>{const fixture=(window as any).fixture,file=fixture.snapshot.files.find((f:any)=>f.path==='新世界/error.js');return fixture.snapshot.results[file.id]?.status;})).toBe('issues');
   await page.evaluate(async()=>{await (window as any).fixture.modify('新世界/error.js','const repaired = 1;');});await expect.poll(()=>page.evaluate(()=>{const fixture=(window as any).fixture,file=fixture.snapshot.files.find((f:any)=>f.path==='新世界/error.js');return fixture.snapshot.results[file.id]?.status;})).toBe('pass');
   await page.screenshot({path:testInfo.outputPath('universe.png')});expect(errors).toEqual([]);
+  await page.goto('/reference.svg');await page.screenshot({path:testInfo.outputPath('original-svg.png'),fullPage:true});
 });
+

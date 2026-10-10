@@ -65,5 +65,8 @@
     "@wdio/mocha-framework": "9.32.0",
     "@wdio/spec-reporter": "9.32.0",
     "@wdio/globals": "9.31.3"
+    ,"puppeteer-core": "24.31.0",
+    "eslint": "9.39.1",
+    "typescript-eslint": "8.48.1"
   }
 }

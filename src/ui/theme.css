@@ -39,6 +39,8 @@
 .panel-drag [data-slot=card-title] { font-size:10px;letter-spacing:1px;color:#a8bfd1;font-weight:500; }
 .panel-actions { display:flex;opacity:.45; }.panel-drag:hover .panel-actions {opacity:1;}
 .panel-actions button { width:18px;height:18px; }
+.panel-actions [data-slot=button],.observatory-header [data-slot=button] {background:transparent;border:0;box-shadow:none;color:#8aa4b8;}
+.panel-actions [data-slot=button]:hover,.observatory-header [data-slot=button]:hover {background:#26384c;color:#d3e7f3;}
 .observatory-panel [data-slot=card-content] { padding:10px!important;height:calc(100% - 36px);min-height:0;overflow:auto; }
 .event-scroll { height:100%;overflow:auto; }
 .event-line { height:42px;display:grid;grid-template-columns:52px 1fr;gap:2px 7px;align-content:center;font-family:Consolas,monospace;font-size:9px; }
