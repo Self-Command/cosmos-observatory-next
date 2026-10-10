@@ -30,7 +30,7 @@ test('Every panel, dialog, sheet, dropdown, select and tooltip has wide and narr
       if(kind==='会话')await page.getByRole('dialog').getByText('来源接入说明与配置预览',{exact:true}).click();
       await capture(page,info,`${prefix}-entry-${kind}`);
       if(kind==='检查'){
-        await page.getByRole('dialog').getByRole('combobox',{name:'检查状态',exact:true}).click();await expect(page.getByRole('listbox')).toBeVisible();await capture(page,info,`${prefix}-select`);await page.getByRole('listbox').press('End');await page.keyboard.press('Enter');await expect(page.getByRole('listbox')).toHaveCount(0);await page.getByRole('dialog').getByRole('button',{name:'清除筛选',exact:true}).click();
+        await page.getByRole('dialog').getByRole('combobox',{name:'检查状态',exact:true}).click();await expect(page.getByRole('listbox')).toBeVisible();await capture(page,info,`${prefix}-select`);await page.getByRole('listbox').press('End');await expect(page.getByRole('option',{name:'失败',exact:true})).toBeFocused();await page.keyboard.press('Enter');await expect(page.getByRole('listbox')).toHaveCount(0);await page.getByRole('dialog').getByRole('button',{name:'清除筛选',exact:true}).click();
       }
       await close(page);
     }
