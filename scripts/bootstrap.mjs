@@ -12,9 +12,9 @@ for (const name of names) {
   if (!response.ok) throw Error(`Official component unavailable: ${name} / ${response.status}`);
   const raw = await response.text();
   let text = raw.replaceAll('from "cn"', 'from "@/lib/utils"').replaceAll('@/registry/new-york-v4/ui/', '@/ui/official/');
-  if (name === 'dialog') {
-    if (!text.includes('<DialogPrimitive.Portal data-slot="dialog-portal"')) throw Error('Dialog portal source changed');
-    text = 'import { usePortalContainer } from "@/ui/PortalContext"\n' + text.replace('<DialogPrimitive.Portal data-slot="dialog-portal"', '<DialogPrimitive.Portal container={usePortalContainer()} data-slot="dialog-portal"');
+  if (['dialog','sheet','select','dropdown-menu','tooltip'].includes(name)) {
+    if (!/<\w+Primitive\.Portal[\s>]/.test(text)) throw Error('Official portal source changed');
+    text = 'import { usePortalContainer } from "@/ui/PortalContext"\n' + text.replace(/<(\w+Primitive)\.Portal(?=[\s>])/g,'<$1.Portal container={usePortalContainer()}');
   }
   await writeFile(`src/ui/official/${name}.tsx`, text);
   componentSources.push({ name, url, originalSHA256: createHash('sha256').update(raw).digest('hex'), customizedSHA256: createHash('sha256').update(text).digest('hex') });
@@ -23,7 +23,7 @@ const licenseURL = `https://raw.githubusercontent.com/shadcn-ui/ui/${sha}/LICENS
 const license = await fetch(licenseURL);
 if (!license.ok) throw Error('Official shadcn license missing');
 await writeFile('src/ui/official/LICENSE.md', await license.text());
-await writeFile('docs/shadcn-source.json', JSON.stringify({ repository: 'shadcn-ui/ui', commit: sha, components: componentSources, patches: ['Import path adaptation', 'Dialog portal scoped to current Obsidian shadow view'] }, null, 2) + '\n');
+await writeFile('docs/shadcn-source.json', JSON.stringify({ repository: 'shadcn-ui/ui', commit: sha, components: componentSources, patches: ['Import path adaptation', 'Dialog, Sheet, Select, DropdownMenu and Tooltip portals scoped to current Obsidian shadow view'] }, null, 2) + '\n');
 
 await cp('vendor/cosmograph/src', 'src/framework/cosmograph', { recursive: true });
 const graphPath = 'src/framework/cosmograph/graph/SphericalGraph.ts';
