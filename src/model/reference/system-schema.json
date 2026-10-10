@@ -1,0 +1,1129 @@
+{
+  "version": 3,
+  "updated": "2026-10-04",
+  "scriptFolder": "宇宙/演化/脚本",
+  "archiveFolder": "黑洞/事件视界",
+  "archiveDays": 7,
+  "sources": [
+    "manual",
+    "rss",
+    "wechat",
+    "book",
+    "pdf",
+    "web",
+    "video"
+  ],
+  "formats": [
+    "note",
+    "article",
+    "pdf",
+    "image",
+    "audio",
+    "video",
+    "book"
+  ],
+  "presets": {
+    "quick": {
+      "label": "快速",
+      "description": "只填名称，其余使用默认值。",
+      "fields": [
+        "name",
+        "tags"
+      ]
+    },
+    "standard": {
+      "label": "标准",
+      "description": "填写状态、归属和主题。",
+      "fields": [
+        "name",
+        "status",
+        "project",
+        "area",
+        "tags"
+      ]
+    },
+    "complete": {
+      "label": "完整",
+      "description": "填写全部可编辑字段。"
+    }
+  },
+  "common": {
+    "status": {
+      "label": "状态",
+      "description": "当前运行状态，不代表目录阶段。",
+      "type": "dropdown",
+      "optional": false
+    },
+    "source": {
+      "label": "来源",
+      "description": "内容从哪里进入系统。",
+      "type": "dropdown",
+      "optional": true,
+      "options": [
+        "manual",
+        "rss",
+        "wechat",
+        "book",
+        "pdf",
+        "web",
+        "video"
+      ],
+      "defaultValue": "manual"
+    },
+    "format": {
+      "label": "格式",
+      "description": "内容的载体，例如 note、article、pdf、image。",
+      "type": "dropdown",
+      "optional": true,
+      "options": [
+        "note",
+        "article",
+        "pdf",
+        "image",
+        "audio",
+        "video",
+        "book"
+      ],
+      "defaultValue": "note"
+    },
+    "source_url": {
+      "label": "来源网址",
+      "description": "原始网页或外部来源地址，没有可以留空。",
+      "type": "text",
+      "optional": true
+    },
+    "area": {
+      "label": "所属领域",
+      "description": "这个实体服务的长期现实领域，可以留空。",
+      "type": "suggester",
+      "optional": true
+    },
+    "project": {
+      "label": "所属项目",
+      "description": "只选择一个主项目；其他关系写在正文来源链接中。",
+      "type": "suggester",
+      "optional": true
+    },
+    "publish": {
+      "label": "允许发布",
+      "description": "只有明确要发布的内容才选择 true。",
+      "type": "dropdown",
+      "optional": false,
+      "options": [
+        "false",
+        "true"
+      ],
+      "defaultValue": "false"
+    },
+    "priority": {
+      "label": "优先级",
+      "type": "dropdown",
+      "options": [
+        "low",
+        "normal",
+        "high"
+      ],
+      "defaultValue": "normal",
+      "optional": true
+    },
+    "due": {
+      "label": "截止日期",
+      "type": "date",
+      "optional": true
+    },
+    "scheduled": {
+      "label": "计划执行时间",
+      "type": "date",
+      "optional": true
+    },
+    "period": {
+      "label": "周期",
+      "type": "dropdown",
+      "options": [
+        "day",
+        "week",
+        "month",
+        "quarter",
+        "year"
+      ],
+      "optional": false
+    },
+    "date": {
+      "label": "记录日期",
+      "type": "text",
+      "optional": false,
+      "description": "实际事件日期或周期标识，不能用创建时间代替。"
+    },
+    "folder": {
+      "label": "存放目录",
+      "description": "只能在当前实体允许的阶段与职责范围内选择。",
+      "type": "suggester",
+      "optional": false
+    },
+    "tags": {
+      "label": "主题标签",
+      "description": "原生 Obsidian 标签，可多选或自定义；支持中文及层级标签，不填写路由。",
+      "type": "tags",
+      "optional": true
+    },
+    "route": {
+      "label": "系统路由",
+      "description": "根据最终目录自动生成；高级用户可修改笔记属性后执行 AutoMover。",
+      "type": "readonly"
+    }
+  },
+  "entities": {
+    "note": {
+      "label": "速记 / 灵感",
+      "description": "未决定去向的个人输入；灵感不等于已准备创造的构想。",
+      "folder": "星云/分子云/速记",
+      "type": "note",
+      "statuses": [
+        "inbox",
+        "active",
+        "processed"
+      ],
+      "fields": [
+        "status",
+        "source",
+        "format",
+        "tags"
+      ],
+      "template": "速记.md",
+      "className": "Note",
+      "body": "## 内容\n\n<!-- 先记原话、画面或念头，保持当时的表达。此时不必证明它有价值，也不必先建项目。 -->\n\n\n## 触发背景\n\n**什么让我想到它**\n\n\n**值得保留的线索**\n\n<!-- 补上当时的场景、来源或真实笔记链接；没有就留空。只记有助于以后理解的背景。 -->\n\n## 下一步\n\n<!-- 回看时判断：准备实现 → 构想或项目；想理解 → 问题；已发生的事 → 经历记录。暂时不确定就保留输入，不强行推进。 -->\n\n**我想继续追问或尝试的事**\n",
+      "defaultStatus": "inbox",
+      "folders": [
+        "星云/分子云/速记",
+        "星云/分子云/灵感",
+        "星云/坍缩"
+      ],
+      "allowSubfolders": true
+    },
+    "resource": {
+      "label": "外部资源",
+      "description": "来自 RSS、微信、书籍、网页或文件的原始材料。",
+      "folder": "星云/星尘/笔记",
+      "type": "resource",
+      "statuses": [
+        "inbox",
+        "processed",
+        "archived"
+      ],
+      "fields": [
+        "status",
+        "source",
+        "source_url",
+        "format",
+        "project",
+        "area",
+        "tags"
+      ],
+      "template": "资源.md",
+      "className": "Resource",
+      "body": "## 原始内容\n\n<!-- 保存原文、摘录或真实附件链接。标明节选范围，不把自己的解释混入原文；长文可直接链接原始资源。 -->\n\n\n## 来源\n\n| 信息 | 记录 |\n| --- | --- |\n| 作者 / 发布者 |  |\n| 原始出处 |  |\n| 发布或获取日期 |  |\n| 内容范围 / 版本 |  |\n\n<!-- source_url 已有原网址时无需再维护第二份；这里补充作者、版本、页码等定位信息。来源不明要明确标注。 -->\n\n## 处理记录\n\n**为什么保存**\n\n\n**值得进一步理解的部分**\n\n\n**采用、暂存还是不再处理**\n\n<!-- 需要理解时创建关联研读，原始资源保留；status: processed 表示已经处理，不表示内容可靠。不要直接把收藏的原文当成个人认知。 -->\n",
+      "defaultStatus": "inbox",
+      "folders": [
+        "星云/星尘/笔记"
+      ],
+      "allowSubfolders": true
+    },
+    "project": {
+      "label": "项目",
+      "description": "持续推进并最终产生结果的创造实体。",
+      "folder": "太阳/吸积",
+      "type": "project",
+      "statuses": [
+        "active",
+        "paused",
+        "done",
+        "cancelled"
+      ],
+      "fields": [
+        "status",
+        "area",
+        "tags",
+        "publish"
+      ],
+      "template": "项目.md",
+      "className": "Project",
+      "body": "## 目标\n\n**为什么现在做**\n\n\n**为谁带来什么变化**\n\n<!-- 从构想推进而来时，先阅读前面的创造意图和预期结果，再把承诺写具体；不必复制一遍原文。项目自身不需要 project 指向自己。 -->\n\n## 成果定义\n\n| 交付物 | 完成标准 | 验收方式 |\n| --- | --- | --- |\n|  |  |  |\n\n<!-- 成果是可使用、可交付的结果。可以有多份文档或作品；交付后分别创建关联成果，不能把所有过程文档都当作成果。 -->\n\n## 范围与边界\n\n**本次包含**\n\n\n**本次不包含**\n\n\n**关键约束与风险**\n\n<!-- 写清时间、资源和外部依赖；扩展范围时记录理由，避免项目始终无法结束。 -->\n\n## 推进安排\n\n| 里程碑 | 可见结果 | 依赖 / 风险 | 计划检查点 |\n| --- | --- | --- | --- |\n|  |  |  |  |\n\n**当前最重要的推进点**\n\n<!-- 这里只组织阶段和依赖。具体行动由 TaskNotes 创建，任务的 project 选择本项目。里程碑表不是另一套任务状态。 -->\n\n## 任务\n\n<!-- 以下读取任务笔记的 project 属性；不在这里复制或手动维护相同任务。 -->\n\n```dataview\nTABLE status, priority, due, scheduled\nFROM \"太阳/核聚变\"\nWHERE type = \"task\" AND contains(project, this.file.link)\nSORT due ASC\n```\n\n## 材料与决策\n\n**主要依据与过程文档**\n\n<!-- 链接实际资源、研读、认知、方案或经历笔记。相关文档留在各自职责目录，通过 project 关联，不全部搬入项目文件夹。 -->\n\n| 日期 | 重要决定 | 理由 / 依据 | 带来的变化 |\n| --- | --- | --- | --- |\n|  |  |  |  |\n\n## 交付与收尾\n\n**已交付的成果及验收依据**\n\n\n**未完成部分怎样处理**\n\n\n**哪些经验可以复用**\n\n<!-- 在项目上运行“创建关联成果”，项目保留，成果另建且自动关联。项目完成、允许公开和网站上线分别确认；没有后台自动完成或发布。 -->\n",
+      "defaultStatus": "active",
+      "folders": [
+        "太阳/吸积"
+      ],
+      "allowSubfolders": true
+    },
+    "question": {
+      "label": "问题",
+      "description": "尚未理解、需要研读和验证的未知。",
+      "folder": "月亮/新月",
+      "type": "question",
+      "statuses": [
+        "open",
+        "researching",
+        "answered",
+        "abandoned"
+      ],
+      "fields": [
+        "status",
+        "source",
+        "area",
+        "tags"
+      ],
+      "template": "问题.md",
+      "className": "Question",
+      "body": "## 我真正想回答什么\n\n**用一个可以回答的问句表述**\n\n\n**这个问题从哪个现象或困惑产生**\n\n<!-- 区分“为什么 / 怎样理解”与“我要交付什么”。后者应进入太阳的课题或项目。 -->\n\n## 问题边界\n\n**涉及的对象、条件和范围**\n\n\n**什么程度的答案对我有用**\n\n<!-- 先缩小问题，不把几个互不相关的未知塞进一篇。必要时另建问题，通过真实链接关联。 -->\n\n## 当前假设\n\n| 可能解释 | 已有依据 | 还解释不了什么 |\n| --- | --- | --- |\n|  |  |  |\n\n<!-- 这是待核实的解释，不是已形成的认知。主动保留至少一种不同解释，有助于避免只搜支持自己的材料。 -->\n\n## 查证路径\n\n**先看什么材料或观察什么现象**\n\n\n**怎样比较不同解释**\n\n<!-- 可以创建关联研读；问题笔记继续保留，不把它移动成资源。 -->\n\n## 新证据\n\n| 来源 / 条件 | 实际支持什么 | 不能说明什么 |\n| --- | --- | --- |\n|  |  |  |\n\n## 当前回答与余留问题\n\n**现在能回答的部分**\n\n\n**仍不确定的部分**\n\n<!-- 提炼后的解释通过研读创建关联认知；answered 由用户确认。仍有未知可继续保留或另建问题，不假装所有疑问已经消失。 -->\n",
+      "defaultStatus": "open",
+      "folders": [
+        "月亮/新月"
+      ],
+      "allowSubfolders": true
+    },
+    "study": {
+      "label": "研读",
+      "description": "把外部资源转化为个人理解的过程。",
+      "folder": "月亮/上弦/阅读",
+      "type": "study",
+      "statuses": [
+        "active",
+        "synthesized",
+        "archived"
+      ],
+      "fields": [
+        "status",
+        "source",
+        "source_url",
+        "project",
+        "area",
+        "tags"
+      ],
+      "template": "研读.md",
+      "className": "Study",
+      "body": "## 参考资源\n\n| 材料 | 作者 / 来源 | 本次研读范围 |\n| --- | --- | --- |\n|  |  |  |\n\n<!-- 链接真实资源、书籍或课程，保留版本、章节、页码或时间戳。关联创建会在文末自动写来源链接，无需重复维护同一个链接。 -->\n\n## 研读目标\n\n**想回答的问题**\n\n\n**读到什么程度就足够**\n\n<!-- 明确本次理解目标，避免把全文摘抄当作研读。阅读、课程、研究只是学习方式，不改变 study 的职责。 -->\n\n## 摘录\n\n### 位置 · 主题\n\n**原文或核心论述**\n\n\n**它与研读目标有什么关系**\n\n<!-- 按需重复此小节。清楚区分原文与转述，附页码、时间戳或段落位置，不制造无法追溯的引文。 -->\n\n## 我的解释\n\n**用自己的话重述**\n\n\n**各个观点怎样联系**\n\n\n**能够说明它的例子**\n\n<!-- 把资料的说法变成自己的理解；保持“作者说”和“我推断”的区别。 -->\n\n## 疑点与对照\n\n| 疑点 / 不同说法 | 当前证据 | 下一步如何核实 |\n| --- | --- | --- |\n|  |  |  |\n\n## 可以提炼什么\n\n**值得单独整理的认知**\n\n\n**还需保留的问题**\n\n<!-- 形成解释后创建关联认知，研读和原资源保留。synthesized 表示完成提炼，不等于证据已经验证。 -->\n",
+      "defaultStatus": "active",
+      "folders": [
+        "月亮/上弦"
+      ],
+      "allowSubfolders": true
+    },
+    "knowledge": {
+      "label": "认知",
+      "description": "已经整理成自己的概念、模型、方法或洞见。",
+      "folder": "月亮/满月",
+      "type": "knowledge",
+      "statuses": [
+        "draft",
+        "verified",
+        "retired"
+      ],
+      "fields": [
+        "status",
+        "source",
+        "project",
+        "area",
+        "tags",
+        "publish"
+      ],
+      "template": "认知.md",
+      "className": "Knowledge",
+      "body": "## 一句话结论\n\n<!-- 用自己的话说明核心判断，并带上必要条件。避免“任何时候都如此”这类没有边界的断言。 -->\n\n\n## 原理 / 模型\n\n**关键概念与关系**\n\n\n**为什么会得到这个结果**\n\n<!-- 概念给出定义与区分；模型解释关系与假定；方法解释步骤及其依据。按本篇性质展开，不要求三种都写。 -->\n\n## 证据与反例\n\n| 证据 / 反例 | 条件与来源 | 支持或限制了什么 |\n| --- | --- | --- |\n|  |  |  |\n\n<!-- 将亲历、资料结论和推断分开；没有反例不代表永远成立。来源需能追溯到研读、资源或实际观察。 -->\n\n## 可应用场景\n\n**适合在哪些情况下使用**\n\n\n**一个具体例子**\n\n\n**不适用或需要谨慎的情况**\n\n## 检验与修订\n\n**最值得验证的判断**\n\n\n**已有检验怎样改变了理解**\n\n<!-- 运行“创建关联检验”，新建检验并保留本篇。verified 必须有可检查依据；检验失败时保留旧判断及修订理由，必要时另建新问题。 -->\n",
+      "defaultStatus": "draft",
+      "folders": [
+        "月亮/满月"
+      ],
+      "allowSubfolders": true
+    },
+    "area": {
+      "label": "领域",
+      "description": "长期存在的现实生活领域。",
+      "folder": "地球/大陆",
+      "type": "area",
+      "statuses": [
+        "active",
+        "paused",
+        "retired"
+      ],
+      "fields": [
+        "status",
+        "tags"
+      ],
+      "template": "领域.md",
+      "className": "Area",
+      "body": "## 领域目标\n\n**长期要照顾的生活部分**\n\n\n**怎样的状态算是健康运转**\n\n<!-- 领域是持续责任，如健康、学习或家庭；不是某次交付。一次项目结束后，领域仍然存在。 -->\n\n## 长期责任\n\n| 责任 | 最低维持标准 | 需要关注的信号 |\n| --- | --- | --- |\n|  |  |  |\n\n**这个领域的边界**\n\n<!-- 写清什么归这里、什么交给其他领域，避免多个领域重复管理同一职责。标准应符合实际能力，不变成无止境的目标清单。 -->\n\n## 当前关注\n\n**目前最值得照顾的变化**\n\n\n**正在支持它的项目或事务**\n\n<!-- 项目、事务和记录通过 area 指向本篇；需要说明时链接真实笔记，不批量复制它们的状态，也不要求所有内容先建项目。 -->\n\n## 维护与回顾\n\n**近期证据说明运转得怎样**\n\n\n**应该维持、改善或停止什么**\n\n\n**下次在什么情况下回看**\n\n<!-- 回看健康、财务等领域时引用具体记录。领域不是把所有健康数据、账单或日记复制到一处的仓库。 -->\n",
+      "defaultStatus": "active",
+      "folders": [
+        "地球/大陆"
+      ],
+      "allowSubfolders": true
+    },
+    "output": {
+      "label": "成果",
+      "description": "已经可以交付、发布或使用的创造结果。",
+      "folder": "太阳/光球",
+      "type": "output",
+      "statuses": [
+        "draft",
+        "published",
+        "retired"
+      ],
+      "fields": [
+        "status",
+        "project",
+        "area",
+        "tags",
+        "publish"
+      ],
+      "template": "成果.md",
+      "className": "Output",
+      "body": "## 成果说明\n\n**交付给谁，用来做什么**\n\n\n**本次交付范围 / 版本**\n\n<!-- 成果是创造的结果，不是项目进度报告。文章可直接写正文；软件、图稿或数据可链接实际交付文件。 -->\n\n## 成果内容\n\n<!-- 写最终内容或真实交付入口，并给出必要的使用说明。制作过程、内部讨论留在项目及过程文档。 -->\n\n\n## 验收与使用\n\n| 判断项 | 结果 / 依据 |\n| --- | --- |\n| 与交付标准的对应 |  |\n| 使用方式 / 前置条件 |  |\n| 已知限制 |  |\n\n<!-- 按实际测试或反馈填写，不能把未验证写成通过；引用源项目中的交付标准即可。 -->\n\n## 发布检查\n\n<!-- 这是人工核对表，不是执行任务。仅内部使用的成果不必允许公开。普通成果不会自动把此处排除在公开正文外，登记发布时必须明确选择范围。 -->\n\n- [ ] 交付内容、标题与版本一致\n- [ ] 引用、链接和附件有效，已核对使用权限\n- [ ] 已检查私人信息和内部资料，公开范围明确\n- [ ] 如需发布，已主动设置许可并完成发布预览\n\n## 反馈与修订\n\n| 日期 | 反馈或问题 | 修订决定 | 对应版本 / 证据 |\n| --- | --- | --- | --- |\n|  |  |  |  |\n\n<!-- Amytis 上传、合并和上线分别核验；只有确认当前内容实际发布后才标记已发布，不以创建成果代替发布。 -->\n",
+      "defaultStatus": "draft",
+      "folders": [
+        "太阳/光球"
+      ],
+      "allowSubfolders": true
+    },
+    "task": {
+      "label": "任务",
+      "description": "由 TaskNotes 创建和管理的行动单元。",
+      "folder": "太阳/核聚变",
+      "type": "task",
+      "statuses": [
+        "open",
+        "in-progress",
+        "done",
+        "cancelled"
+      ],
+      "fields": [
+        "status",
+        "priority",
+        "due",
+        "scheduled",
+        "project",
+        "area",
+        "tags"
+      ],
+      "externalCreator": "tasknotes",
+      "template": "任务.md",
+      "className": "Task",
+      "body": "## 任务说明\n\n{{details}}\n\n<!-- 写清一次可以执行的行动，以及为什么现在需要它。时间、优先级和状态由 TaskNotes 属性维护，不在正文另设一套。 -->\n\n## 完成标准\n\n**做完后应该能看到什么**\n\n\n**怎样确认已经完成**\n\n<!-- 这里写验收标准，不生成空复选框。若行动必须拆分，使用 TaskNotes 的任务或子任务关系。 -->\n\n## 执行记录\n\n**实际结果或证据**\n\n\n**遇到的阻碍与交接信息**\n\n<!-- 只记需要留下的结果。长期经验可另建认知或经历记录；任务终态和完成日期仍由 TaskNotes 管理。 -->\n",
+      "defaultStatus": "open",
+      "folders": [
+        "太阳/核聚变"
+      ],
+      "allowSubfolders": false
+    },
+    "journal": {
+      "label": "周期记录",
+      "description": "由 Periodic Notes 创建的实际记录。",
+      "folder": "地球/地层/日记",
+      "type": "journal",
+      "statuses": [
+        "open",
+        "closed"
+      ],
+      "fields": [
+        "status",
+        "period",
+        "date",
+        "tags"
+      ],
+      "externalCreator": "periodic-notes",
+      "template": "周期记录.md",
+      "className": "Journal",
+      "body": "## 记录\n\n<!-- 周期创建请使用日、周、月、季、年模板；这里仅定义周期记录的通用职责。记录这个周期真实发生的事，不替代独立经历笔记。 -->\n\n\n## 复盘\n\n**发生了什么变化，有什么依据**\n\n\n**哪些经验值得保留**\n\n## 下个周期\n\n**准备维持或调整什么**\n\n<!-- 行动交给 TaskNotes。周期之间只改变回看尺度，不通过生命周期把日记移动成周记或项目。 -->\n",
+      "defaultStatus": "open",
+      "folders": [
+        "地球/地层/日记",
+        "地球/地层/周记",
+        "地球/地层/月记",
+        "地球/地层/季记",
+        "地球/地层/年记"
+      ],
+      "allowSubfolders": true
+    },
+    "idea": {
+      "label": "构想",
+      "description": "已经明确准备探索实现的创造意图，区别于星云中尚未承诺的灵感。",
+      "folder": "太阳/原恒星/构想",
+      "folders": [
+        "太阳/原恒星/构想"
+      ],
+      "type": "idea",
+      "statuses": [
+        "active",
+        "paused",
+        "adopted",
+        "abandoned"
+      ],
+      "defaultStatus": "active",
+      "fields": [
+        "status",
+        "project",
+        "area",
+        "tags"
+      ],
+      "template": "构想.md",
+      "className": "Idea",
+      "body": "## 创造意图\n\n**我准备做什么**\n\n\n**为谁解决什么困扰，或创造什么体验**\n\n<!-- 用一个具体场景说明动机。这里已经有创造意图；尚未决定是否实现的念头留在星云。 -->\n\n## 预期结果\n\n**如果做出来，会有什么变化**\n\n\n**最小可见的结果**\n\n<!-- 描述能看到、使用或判断的结果，不先罗列所有功能。此处是期待；推进为项目后再明确交付标准。 -->\n\n## 可行性\n\n| 判断项 | 已知情况 | 仍需确认 |\n| --- | --- | --- |\n| 所需能力与资源 |  |  |\n| 时间与成本 |  |  |\n| 关键风险 |  |  |\n\n<!-- 区分已有事实和乐观假设。先找最可能让构想无法成立的条件，不把未知写成保证。 -->\n\n## 最先要确认的事\n\n**最关键的未知**\n\n\n**怎样用较小代价看见答案**\n\n\n**什么情况下值得成为项目**\n\n<!-- 明确交付与组织安排后运行“推进为项目”；同一笔记保留构想正文，项目结构接在后面。此处不建立第二套任务清单。 -->\n",
+      "allowSubfolders": true
+    },
+    "topic": {
+      "label": "课题",
+      "description": "以解决问题或形成交付为目的的创造课题，区别于月亮中的理解问题。",
+      "folder": "太阳/原恒星/课题",
+      "folders": [
+        "太阳/原恒星/课题"
+      ],
+      "type": "topic",
+      "statuses": [
+        "open",
+        "active",
+        "resolved",
+        "abandoned"
+      ],
+      "defaultStatus": "open",
+      "fields": [
+        "status",
+        "project",
+        "area",
+        "tags"
+      ],
+      "template": "课题.md",
+      "className": "Topic",
+      "body": "## 要解决什么\n\n**具体问题与发生场景**\n\n\n**现在的做法为何不够**\n\n<!-- 课题面向解决和交付；如果只想理解一个现象，应创建月亮中的问题。写清受影响的人和真实情境。 -->\n\n## 交付标准\n\n| 预期交付 | 怎么判断可用 | 谁使用 / 在哪里使用 |\n| --- | --- | --- |\n|  |  |  |\n\n<!-- 可以是方案、工具、作品、报告或数据。不要把“研究一下”当作交付标准。 -->\n\n## 约束\n\n**必须满足的条件**\n\n\n**本次不解决的范围**\n\n<!-- 记录期限、成本、证据要求或不可改变的条件；缺少依据的约束先标成待确认。 -->\n\n## 可选路径\n\n| 路径 | 可取之处 | 代价或风险 | 需要的证据 |\n| --- | --- | --- | --- |\n|  |  |  |  |\n\n## 立项判断\n\n**当前选择及理由**\n\n\n**启动前仍缺什么**\n\n<!-- 准备组织资源并推进交付时转为项目；课题尚无执行安排时，不必提前创建任务。 -->\n",
+      "allowSubfolders": true
+    },
+    "hypothesis": {
+      "label": "假设",
+      "description": "关于方案或创造结果的可验证推断，记录验证条件与证据。",
+      "folder": "太阳/原恒星/假设",
+      "folders": [
+        "太阳/原恒星/假设"
+      ],
+      "type": "hypothesis",
+      "statuses": [
+        "proposed",
+        "testing",
+        "supported",
+        "rejected"
+      ],
+      "defaultStatus": "proposed",
+      "fields": [
+        "status",
+        "project",
+        "area",
+        "tags"
+      ],
+      "template": "假设.md",
+      "className": "Hypothesis",
+      "body": "## 创造假设\n\n**如果采取什么方案，在什么条件下，预期出现什么结果**\n\n\n**为什么认为它可能成立**\n\n<!-- 一次只写一个可以被证据推翻的推断。它属于创造方案，不能用愿望或口号代替。 -->\n\n## 验证条件\n\n| 条件 | 预先确定的判断方式 |\n| --- | --- |\n| 适用对象与环境 |  |\n| 可观察的结果 |  |\n| 支持它的门槛 |  |\n| 否定它的情形 |  |\n\n<!-- 先定标准再看结果，写出比较基准。无法量化时也要给出可观察的判据。 -->\n\n## 验证设计\n\n**最小试验或比较**\n\n\n**如何减少其他因素干扰**\n\n\n**投入上限与停止条件**\n\n<!-- 需要组织执行时可推进为项目。单次行动交给 TaskNotes；此处描述方案，不复制任务状态。 -->\n\n## 证据\n\n| 日期 / 条件 | 实际观察 | 证据位置 | 对假设的影响 |\n| --- | --- | --- | --- |\n|  |  |  |  |\n\n## 判断与下一版\n\n**当前是支持、否定，还是证据不足**\n\n\n**结果只适用于什么条件**\n\n\n**需要怎样调整方案**\n\n<!-- supported / rejected 由用户根据证据确认；不要因创建了项目就宣称假设成立。 -->\n",
+      "allowSubfolders": true
+    },
+    "direction": {
+      "label": "方向",
+      "description": "长期原则、愿景或目标，为领域和项目提供方向，不替代执行项目。",
+      "folder": "地球/地核",
+      "folders": [
+        "地球/地核"
+      ],
+      "type": "direction",
+      "statuses": [
+        "active",
+        "paused",
+        "retired"
+      ],
+      "defaultStatus": "active",
+      "fields": [
+        "status",
+        "tags"
+      ],
+      "template": "方向.md",
+      "className": "Direction",
+      "body": "## 方向\n\n**我希望长期走向什么**\n\n\n**为什么这件事对我重要**\n\n<!-- 原则写判断依据，愿景写期待的生活，长期目标写希望达到的状态。地核提供方向，不承担某次项目的具体交付。 -->\n\n## 原则与边界\n\n**遇到选择时优先什么**\n\n\n**哪些代价不愿意接受**\n\n\n**需要警惕的偏离**\n\n<!-- 原则不必堆成口号，用一个真实选择说明它怎样起作用。目标的具体执行由项目承担。 -->\n\n## 关联领域\n\n| 长期领域 | 这个方向意味着什么 | 可以观察的变化 |\n| --- | --- | --- |\n|  |  |  |\n\n<!-- 只链接真实领域，不把所有项目与任务都堆在方向笔记中。没有对应领域可先留空。 -->\n\n## 回看与调整\n\n**什么经历让我重新理解它**\n\n\n**现在需要坚持、调整还是放下**\n\n<!-- 以真实经历为依据调整；方向改变不等于过去的项目和记录失效，也不会自动推进它们。 -->\n",
+      "allowSubfolders": true
+    },
+    "object": {
+      "label": "对象",
+      "description": "人物、组织、地点、物品或服务等现实对象，维护稳定资料与关联关系。",
+      "folder": "地球/地表",
+      "folders": [
+        "地球/地表"
+      ],
+      "type": "object",
+      "statuses": [
+        "active",
+        "inactive",
+        "retired"
+      ],
+      "defaultStatus": "active",
+      "fields": [
+        "status",
+        "project",
+        "area",
+        "tags"
+      ],
+      "template": "对象.md",
+      "className": "Object",
+      "body": "## 对象信息\n\n**它是谁 / 是什么**\n\n| 稳定资料 | 内容 / 来源 |\n| --- | --- |\n| 名称与识别信息 |  |\n| 主要特征或用途 |  |\n| 资料日期 / 版本 |  |\n\n<!-- 人物、组织、地点、物品、服务按实际需要填写；没有必要把所有类别的字段都套进去。敏感资料只在确有需要时记录。 -->\n\n## 与我的关系\n\n**为什么值得单独维护**\n\n\n**我在什么情境会用到它**\n\n## 关联关系\n\n**相关人物、组织、地点或服务**\n\n\n**相关项目、事务和经历**\n\n<!-- 使用实际笔记链接，并说明关系含义。对象保存稳定资料；一次见面、一次出行或一次购买的过程另建经历记录。 -->\n\n## 维护事项\n\n**哪些资料需要定期核实**\n\n\n**已有变化与依据**\n\n<!-- 到期行动由 TaskNotes 管理，不在此复制另一套待办。物品的资产性质、服务的使用情况通过领域或具体记录表达，不另造重复对象。 -->\n",
+      "allowSubfolders": true
+    },
+    "routine": {
+      "label": "事务",
+      "description": "反复发生的事务或流程；单次执行用任务，结果另建经历记录。",
+      "folder": "地球/轨道",
+      "folders": [
+        "地球/轨道"
+      ],
+      "type": "routine",
+      "statuses": [
+        "active",
+        "paused",
+        "retired"
+      ],
+      "defaultStatus": "active",
+      "fields": [
+        "status",
+        "project",
+        "area",
+        "tags"
+      ],
+      "template": "事务.md",
+      "className": "Routine",
+      "body": "## 周期与触发条件\n\n**这项事务维护什么**\n\n| 条件 | 约定 |\n| --- | --- |\n| 何时开始 / 频率 |  |\n| 需要的前置条件 |  |\n| 何时不必执行 |  |\n\n<!-- 这是反复运行的流程定义；周期文字不会自动生成任务。确需重复任务时在 TaskNotes 中配置。 -->\n\n## 执行流程\n\n| 步骤 | 操作 | 检查结果 |\n| --- | --- | --- |\n| 1 |  |  |\n\n**结束条件**\n\n<!-- 只保留每次执行都需要的操作与判据，不把某次事件的经过写成永久步骤。 -->\n\n## 例外与恢复\n\n**无法按流程执行时怎么办**\n\n\n**什么情况需要暂停或调整**\n\n## 产生的任务与记录\n\n**单次行动如何交给 TaskNotes**\n\n\n**结果应该留下什么记录**\n\n<!-- 任务进入核聚变；结果进入地层的合适分类。通过真实链接说明，不重复抄写任务状态和记录正文。 -->\n\n## 流程改进\n\n| 日期 | 发现的问题 | 调整及理由 | 怎样判断有效 |\n| --- | --- | --- | --- |\n|  |  |  |  |\n",
+      "allowSubfolders": true
+    },
+    "record": {
+      "label": "经历记录",
+      "description": "实际发生的旅行、事件、交流、健康、财务及复盘记录，日期填写发生时间。",
+      "folder": "地球/地层/事件",
+      "folders": [
+        "地球/地层/游记",
+        "地球/地层/事件",
+        "地球/地层/交流",
+        "地球/地层/健康",
+        "地球/地层/财务",
+        "地球/地层/复盘"
+      ],
+      "type": "record",
+      "statuses": [
+        "draft",
+        "complete"
+      ],
+      "defaultStatus": "draft",
+      "fields": [
+        "status",
+        "date",
+        "project",
+        "area",
+        "tags"
+      ],
+      "template": "经历记录.md",
+      "className": "Record",
+      "body": "## 发生了什么\n\n| 事实 | 记录 |\n| --- | --- |\n| 时间与地点 |  |\n| 涉及的人或对象 |  |\n| 事件与起因 |  |\n\n<!-- date 使用实际发生日期，不用笔记创建时间代替。健康、财务、交流等按各自内容记录事实，不能把推测写成诊断或已确认结果。 -->\n\n## 经过与证据\n\n### 时间 · 关键片段\n\n**实际经过**\n\n\n**可追溯的记录或附件**\n\n<!-- 按经历顺序重复关键片段。照片、收据、对话摘录放到对应位置，区分亲历、转述和事后补记。 -->\n\n## 感受与后续\n\n**当时的感受**\n\n\n**现在怎样看待这件事**\n\n\n**还有什么需要处理**\n\n<!-- 把事实与感受分开。需要执行的事项另建 TaskNotes 任务；值得长期使用的理解另建认知，不把整个记录移动成认知。 -->\n\n## 回看线索\n\n**与哪些真实项目、领域、对象或经历有关**\n\n\n**哪些背景需要留给未来的自己**\n\n<!-- project、area 可留空；已有属性链接不用重复抄写。专题复盘可概括变化并指向原记录，不能覆盖原始经历。 -->\n",
+      "allowSubfolders": true,
+      "directoryTemplates": {
+        "地球/地层/游记": {
+          "template": "游记.md",
+          "body": "## 旅程概览\n\n| 项目 | 记录 |\n| --- | --- |\n| 目的地 |  |\n| 旅行日期 |  |\n| 同行的人 |  |\n| 出行方式 |  |\n\n> **这趟旅行的一句话：**\n\n## 出发之前\n\n<!-- 写下为什么此刻想去那里，以及出发前的一种期待。游记不必从订票经过开始。 -->\n\n\n## 路线与节奏\n\n| 日期 / 时段 | 路线与停留 | 实际节奏 |\n| --- | --- | --- |\n|  |  |  |\n\n<!-- 记录真正走过的路线。实际节奏可写停留时间、步行强度或临时变化；只写值得回看的信息。短途可改成一行路线。 -->\n\n## 旅途现场\n\n### 时间 · 地点\n\n<!-- 用具体日期或场景替换小标题，例如“清晨 · 金顶”。每到一个值得写的地方，复制这一小节，按经历顺序排列。 -->\n\n**眼前的景象**\n\n<!-- 留下一个具体细节：光线、声音、气味、天气或一张照片背后的现场。 -->\n\n\n**当时发生的事**\n\n<!-- 写自己做了什么、遇见谁、出现了什么意外，而不只列景点名称。 -->\n\n\n**那一刻的感受**\n\n<!-- 写当时真实的反应。后来改变的看法留到最后一节，不必提前总结。 -->\n\n\n<!-- 照片插在对应场景下，写一句图注：拍摄地点、时间或为何想留下它。直接插入真实附件，不保留假的图片链接。 -->\n\n## 实用备忘\n\n| 项目 | 实际经验 |\n| --- | --- |\n| 交通与住宿 |  |\n| 吃饭与花费 |  |\n| 装备与体力 |  |\n| 下次会换的安排 |  |\n\n<!-- 只保留亲自验证的信息，写明当时条件或日期；精确价格、时间拿不准时注明。不需要的行可删除，详细账单可链接原记录。 -->\n\n## 回到日常\n\n**最想留下的记忆**\n\n\n**与出发前相比，我的看法有什么变化**\n\n\n**下次想再去，还是想换一种走法**\n\n\n<!-- 需要执行的后续事项，通过 TaskNotes 创建任务；不要把游记结尾变成另一套任务清单。 -->\n"
+        }
+      }
+    },
+    "validation": {
+      "label": "检验",
+      "description": "对已有认知进行实践、练习、实验或反例检验，结果以证据确认。",
+      "folder": "月亮/下弦/实践",
+      "folders": [
+        "月亮/下弦"
+      ],
+      "type": "validation",
+      "statuses": [
+        "planned",
+        "active",
+        "passed",
+        "failed"
+      ],
+      "defaultStatus": "planned",
+      "fields": [
+        "status",
+        "project",
+        "area",
+        "tags"
+      ],
+      "template": "检验.md",
+      "className": "Validation",
+      "body": "## 待检验的认知\n\n**具体检验哪条判断**\n\n\n**在什么条件下应该成立**\n\n<!-- 指向真实认知及其具体判断。关联创建自动写来源链接；本篇用于检验理解，不替代太阳中的方案假设。 -->\n\n## 检验方法\n\n| 设计项 | 预先约定 |\n| --- | --- |\n| 对象 / 环境 |  |\n| 操作或观察方式 |  |\n| 比较基准 |  |\n| 通过与失败判据 |  |\n\n<!-- 实践看能否应用，练习看能否复现，实验看条件差异，反例看边界是否成立。先定判据，再记录结果。 -->\n\n## 过程与观察\n\n| 时间 / 条件 | 做了什么 | 实际看到什么 | 证据位置 |\n| --- | --- | --- | --- |\n|  |  |  |  |\n\n<!-- 记录失败和意外，区分观察与解释。不选择性删除不符合预期的结果。 -->\n\n## 结果与新问题\n\n**对照判据：通过、失败，还是证据不足**\n\n\n**哪些其他因素可能影响结果**\n\n\n**出现了什么新问题**\n\n## 回馈认知\n\n**原认知哪些部分保留，哪些需要修改**\n\n\n**下一次应在什么条件下再检验**\n\n<!-- 状态由用户确认；系统不会自动判定成功、改写认知或创建新问题。修订认知时保留本篇证据和原有历史。 -->\n",
+      "allowSubfolders": true
+    }
+  },
+  "actions": [
+    {
+      "id": "idea",
+      "label": "推进为构想",
+      "mode": "move",
+      "from": [
+        "星云/分子云/速记",
+        "星云/分子云/灵感",
+        "星云/坍缩"
+      ],
+      "types": [
+        "note"
+      ],
+      "folder": "太阳/原恒星/构想",
+      "updates": {
+        "type": "idea",
+        "status": "active"
+      }
+    },
+    {
+      "id": "project",
+      "label": "推进为项目",
+      "mode": "move",
+      "from": [
+        "星云/分子云/速记",
+        "星云/分子云/灵感",
+        "星云/坍缩",
+        "太阳/原恒星"
+      ],
+      "types": [
+        "note",
+        "idea",
+        "topic",
+        "hypothesis"
+      ],
+      "folder": "太阳/吸积",
+      "updates": {
+        "type": "project",
+        "status": "active"
+      }
+    },
+    {
+      "id": "question",
+      "label": "推进为问题",
+      "mode": "move",
+      "from": [
+        "星云/分子云/速记",
+        "星云/分子云/灵感",
+        "星云/坍缩"
+      ],
+      "types": [
+        "note"
+      ],
+      "folder": "月亮/新月",
+      "updates": {
+        "type": "question",
+        "status": "open"
+      }
+    },
+    {
+      "id": "study",
+      "label": "创建关联研读",
+      "mode": "create",
+      "from": [
+        "星云/星尘/笔记",
+        "月亮/新月"
+      ],
+      "types": [
+        "resource",
+        "question"
+      ],
+      "entity": "study"
+    },
+    {
+      "id": "knowledge",
+      "label": "创建关联认知",
+      "mode": "create",
+      "from": [
+        "月亮/上弦"
+      ],
+      "types": [
+        "study"
+      ],
+      "entity": "knowledge"
+    },
+    {
+      "id": "output",
+      "label": "创建关联成果",
+      "mode": "create",
+      "from": [
+        "太阳/吸积"
+      ],
+      "types": [
+        "project"
+      ],
+      "entity": "output"
+    },
+    {
+      "id": "published",
+      "label": "标记成果已发布",
+      "mode": "update",
+      "from": [
+        "太阳/光球"
+      ],
+      "types": [
+        "output"
+      ],
+      "updates": {
+        "status": "published",
+        "publish": true
+      }
+    },
+    {
+      "id": "archive",
+      "label": "转为归档",
+      "mode": "move",
+      "from": [
+        "太阳/核聚变",
+        "太阳/光球"
+      ],
+      "types": [
+        "task",
+        "output"
+      ],
+      "folder": "黑洞/事件视界",
+      "updates": {}
+    },
+    {
+      "id": "record",
+      "label": "整理为经历记录",
+      "mode": "move",
+      "from": [
+        "星云/分子云/速记",
+        "星云/分子云/灵感",
+        "星云/坍缩"
+      ],
+      "types": [
+        "note"
+      ],
+      "folder": "地球/地层/事件",
+      "updates": {
+        "type": "record",
+        "status": "draft"
+      }
+    },
+    {
+      "id": "validation",
+      "label": "创建关联检验",
+      "mode": "create",
+      "from": [
+        "月亮/满月"
+      ],
+      "types": [
+        "knowledge"
+      ],
+      "entity": "validation"
+    },
+    {
+      "id": "repair-body",
+      "label": "补齐当前实体正文（保留原文）",
+      "mode": "update",
+      "from": [
+        "星云",
+        "太阳/原恒星",
+        "太阳/吸积",
+        "月亮/新月",
+        "地球/地层"
+      ],
+      "types": [
+        "note",
+        "idea",
+        "topic",
+        "hypothesis",
+        "project",
+        "question",
+        "record"
+      ],
+      "updates": {}
+    }
+  ],
+  "attachmentFolder": "星云/星尘/附件",
+  "sealedFolder": "黑洞/奇点",
+  "archiveCategories": {
+    "note": "资源",
+    "resource": "资源",
+    "idea": "项目",
+    "topic": "项目",
+    "hypothesis": "项目",
+    "project": "项目",
+    "task": "任务",
+    "output": "成果",
+    "question": "认知",
+    "study": "认知",
+    "knowledge": "认知",
+    "validation": "认知",
+    "direction": "现实",
+    "area": "现实",
+    "object": "现实",
+    "routine": "现实",
+    "record": "现实",
+    "journal": "现实"
+  },
+  "stageCategories": {
+    "宇宙/创世": [
+      "初始化",
+      "模板",
+      "结构"
+    ],
+    "宇宙/法则": [
+      "规则",
+      "属性",
+      "生命周期"
+    ],
+    "宇宙/演化": [
+      "脚本",
+      "插件",
+      "变更",
+      "验证"
+    ],
+    "银河/银心": [
+      "驾驶舱"
+    ],
+    "银河/银盘": [],
+    "银河/星流": [],
+    "星云/星尘": [
+      "笔记",
+      "附件",
+      "阅读数据"
+    ],
+    "星云/分子云": [
+      "速记",
+      "灵感"
+    ],
+    "星云/坍缩": [],
+    "太阳/原恒星": [
+      "构想",
+      "课题",
+      "假设"
+    ],
+    "太阳/吸积": [
+      "开发",
+      "创作",
+      "研究",
+      "活动",
+      "生活"
+    ],
+    "太阳/核聚变": [],
+    "太阳/光球": [
+      "软件",
+      "文章",
+      "影音",
+      "图稿",
+      "报告",
+      "数据"
+    ],
+    "月亮/新月": [],
+    "月亮/上弦": [
+      "阅读",
+      "课程",
+      "研究"
+    ],
+    "月亮/满月": [],
+    "月亮/下弦": [
+      "实践",
+      "练习",
+      "实验",
+      "反例"
+    ],
+    "地球/地核": [
+      "原则",
+      "愿景",
+      "目标"
+    ],
+    "地球/大陆": [
+      "学习",
+      "工作",
+      "健康",
+      "财务",
+      "家庭",
+      "日常",
+      "兴趣",
+      "社会"
+    ],
+    "地球/地表": [
+      "人物",
+      "组织",
+      "地点",
+      "物品",
+      "服务"
+    ],
+    "地球/轨道": [],
+    "地球/地层": [
+      "日记",
+      "周记",
+      "月记",
+      "季记",
+      "年记",
+      "游记",
+      "事件",
+      "交流",
+      "健康",
+      "财务",
+      "复盘"
+    ],
+    "黑洞/吸积盘": [],
+    "黑洞/事件视界": [
+      "项目",
+      "任务",
+      "成果",
+      "资源",
+      "认知",
+      "现实"
+    ],
+    "黑洞/奇点": [
+      "项目",
+      "任务",
+      "成果",
+      "资源",
+      "认知",
+      "现实"
+    ],
+    "黑洞/喷流": [],
+    "星云/星尘/附件": [
+      "图片",
+      "文档",
+      "书籍",
+      "音频",
+      "视频",
+      "绘图",
+      "数据"
+    ]
+  },
+  "tagSuggestions": [
+    "ai",
+    "obsidian",
+    "学习",
+    "工作",
+    "生活",
+    "个人系统",
+    "健康",
+    "财务"
+  ],
+  "optionLabels": {
+    "inbox": "待整理",
+    "active": "进行中",
+    "processed": "已整理",
+    "archived": "已归档",
+    "open": "待处理",
+    "researching": "研究中",
+    "answered": "已解答",
+    "abandoned": "已放弃",
+    "paused": "已暂停",
+    "done": "已完成",
+    "cancelled": "已取消",
+    "synthesized": "已提炼",
+    "draft": "草稿",
+    "verified": "已验证",
+    "retired": "已退役",
+    "in-progress": "执行中",
+    "closed": "已结束",
+    "adopted": "已采用",
+    "resolved": "已解决",
+    "proposed": "待验证",
+    "testing": "验证中",
+    "supported": "获得支持",
+    "rejected": "被否定",
+    "inactive": "不活跃",
+    "complete": "记录完成",
+    "planned": "待检验",
+    "passed": "检验通过",
+    "failed": "检验失败",
+    "manual": "手动输入",
+    "rss": "RSS 订阅",
+    "wechat": "微信同步",
+    "book": "书籍",
+    "pdf": "PDF",
+    "web": "网页",
+    "video": "视频",
+    "note": "笔记",
+    "article": "文章",
+    "image": "图片",
+    "audio": "音频",
+    "false": "不允许发布",
+    "true": "允许发布",
+    "low": "低",
+    "normal": "普通",
+    "high": "高",
+    "day": "日",
+    "week": "周",
+    "month": "月",
+    "quarter": "季",
+    "year": "年"
+  },
+  "entityFlows": {
+    "note": "可整理为构想、项目、问题或经历记录。",
+    "resource": "原文保留，需要理解时创建关联研读。",
+    "project": "组织任务，完成后创建关联成果；项目本身保留。",
+    "question": "需要理解时创建关联研读，研读再提炼认知。",
+    "study": "研读保留来源，形成理解后创建关联认知。",
+    "knowledge": "创建关联检验验证理解；证据结论由用户确认。",
+    "area": "维护长期责任领域，可关联多个项目与经历。",
+    "output": "明确发布后记录发布日期，满七天可审计归档。",
+    "task": "执行与日期由 TaskNotes 管理，终态满七天可审计归档。",
+    "journal": "由周期插件维护日期导航；不替代专题游记和事件记录。",
+    "idea": "可推进为项目，组织具体创造过程。",
+    "topic": "明确交付和组织安排后可推进为项目。",
+    "hypothesis": "可推进为项目验证方案，保留推断与证据。",
+    "direction": "为长期领域及具体项目提供方向，通过链接关联。",
+    "object": "与领域、项目、事务和经历关联，不把对象改成任务。",
+    "routine": "描述频率与流程，单次行动另建任务，结果另建记录。",
+    "record": "直接承载现实经历，可关联项目和领域，无需先建项目。",
+    "validation": "通过或失败后保留证据，后续认知修订与新问题由用户创建。"
+  },
+  "directoryVersion": 3,
+  "periodTemplates": {
+    "day": {
+      "name": "日记",
+      "format": "YYYY-MM-DD",
+      "body": "## 今日重心\n\n**今天最想照顾的一件事**\n\n<!-- 可以是工作、生活、休息或陪伴；不必给每一天设绩效目标。需要行动时用 TaskNotes 安排。 -->\n\n## 今日记录\n\n### 时间 · 场景\n\n<!-- 按实际顺序记录值得留下的事，按需重复场景。详细游记、健康、财务或交流记录另建并链接，日记只留当天线索。 -->\n\n\n## 任务回顾\n\n<!-- 显示计划或截止日期落在当天的任务，不代表“当天完成的全部任务”。实际状态以 TaskNotes 为准，不复制待办。 -->\n\n```dataview\nTABLE status, priority, due, scheduled\nFROM \"太阳/核聚变\"\nWHERE type = \"task\" AND ((scheduled AND dateformat(scheduled, \"yyyy-MM-dd\") = dateformat(this.date, \"yyyy-MM-dd\")) OR (due AND dateformat(due, \"yyyy-MM-dd\") = dateformat(this.date, \"yyyy-MM-dd\")))\nSORT priority ASC\n```\n\n## 想法与感受\n\n**今天注意到了什么**\n\n\n**我的感受与精力**\n\n<!-- 记真实感受，不急着总结。需要实现的念头、想理解的问题可以另建对应实体。 -->\n\n## 复盘\n\n**今天什么值得保留**\n\n\n**什么没有按预期发生，为什么**\n\n## 留给明天\n\n**一个值得继续的关注点**\n\n<!-- 不复制未完成任务，它们继续由 TaskNotes 管理。已发生的事实留在今天，不因新一天开始而搬走。 -->\n"
+    },
+    "week": {
+      "name": "周记",
+      "format": "GGGG-[W]WW",
+      "body": "## 本周进展\n\n| 关注点 / 项目 | 实际变化 | 依据或记录 |\n| --- | --- | --- |\n|  |  |  |\n\n<!-- 回看日记、任务和项目，选出重要变化；不逐日复制，也不以完成任务数量代替成果。 -->\n\n## 生活与精力\n\n**什么让我状态更好**\n\n\n**什么持续消耗了我**\n\n<!-- 按需要回看健康、关系或日常，事实可链接原记录；不要求每个领域每周都填满。 -->\n\n## 本周复盘\n\n**有效的做法及原因**\n\n\n**没有推进的事及真正阻碍**\n\n## 本周理解\n\n**新的理解或反复出现的问题**\n\n<!-- 已成形的理解另建认知；本篇保留它为何在这一周出现的背景。 -->\n\n## 下周重点\n\n| 重点 | 预期变化 | 需要的准备 |\n| --- | --- | --- |\n|  |  |  |\n\n**决定减少或暂停什么**\n\n<!-- 只选有实际容量的重点，具体行动在 TaskNotes 中安排；周记不自动改变项目或领域状态。 -->\n"
+    },
+    "month": {
+      "name": "月记",
+      "format": "YYYY-MM",
+      "body": "## 本月总结\n\n**用一句话描述这个月**\n\n| 重要变化 | 实际结果 | 依据或记录 |\n| --- | --- | --- |\n|  |  |  |\n\n<!-- 由周记录和现实证据归纳，不把四周正文拼接起来。既可以写交付，也可以写生活中的变化。 -->\n\n## 重要变化\n\n**项目与生活领域的变化**\n\n\n**时间、精力或资源用在了哪里**\n\n<!-- 只写有依据的判断；健康和财务总结链接原记录，不在此虚构统计数据。 -->\n\n## 重复出现的模式\n\n**什么做法持续有效**\n\n\n**什么问题不止出现一次**\n\n\n**这些现象可能说明什么**\n\n## 经验与认知\n\n**值得保留的方法或理解**\n\n\n**还需验证的解释**\n\n<!-- 区分观察到的趋势和自己的推断；需要检验时另建对应笔记。 -->\n\n## 下月方向\n\n**最值得投入的方向**\n\n\n**需要维持的责任**\n\n\n**准备减少或改变的安排**\n\n<!-- 月度调整服务于领域与项目，不取代长期方向。具体执行继续交给 TaskNotes。 -->\n"
+    },
+    "quarter": {
+      "name": "季记",
+      "format": "YYYY-[Q]Q",
+      "body": "## 本季度总结\n\n**这一阶段最主要的变化**\n\n| 原先关注 | 实际结果 | 支持判断的证据 |\n| --- | --- | --- |\n|  |  |  |\n\n<!-- 回看月记及真实成果，判断一个阶段的变化，而不是逐月复制。未完成也要说明范围和原因。 -->\n\n## 关键项目与认知\n\n**完成、继续和暂停的项目意味着什么**\n\n\n**哪些理解已影响实际选择**\n\n<!-- 引用真实项目、成果、认知与检验；本篇不自动变更它们的状态，也不自动把项目归档。 -->\n\n## 长期领域的状态\n\n| 需要关注的领域 | 当前变化 | 需要的维护或改善 |\n| --- | --- | --- |\n|  |  |  |\n\n## 投入与取舍\n\n**哪些投入值得继续**\n\n\n**哪些承诺超出了实际容量**\n\n\n**有哪些机会应明确放弃**\n\n## 下季度方向\n\n| 方向 | 希望看见的阶段结果 | 前提或限制 |\n| --- | --- | --- |\n|  |  |  |\n\n**怎样判断需要中途调整**\n\n<!-- 选少量阶段重点。需要交付的工作另建或继续项目，反复责任留在领域与事务中。 -->\n"
+    },
+    "year": {
+      "name": "年记",
+      "format": "YYYY",
+      "body": "## 年度回顾\n\n**这一年对我意味着什么**\n\n| 时期 / 转折 | 发生的变化 | 相关经历 |\n| --- | --- | --- |\n|  |  |  |\n\n<!-- 回看季记、重要经历和真实结果，写出自己的年度脉络；不要把十二个月的总结机械拼接。 -->\n\n## 年度成果\n\n**真正形成或交付了什么**\n\n\n**哪些努力虽然没有交付，仍带来了变化**\n\n<!-- 链接实际成果或证据，不把计划、许可和上线混为一谈。也不只以产出数量衡量这一年。 -->\n\n## 生活与长期责任\n\n| 重要领域 | 相比年初的变化 | 需要继续照顾的事 |\n| --- | --- | --- |\n|  |  |  |\n\n**最值得记住的人与经历**\n\n## 原则与理解\n\n**我对什么改变了看法**\n\n\n**哪些原则经受住了现实检验**\n\n\n**什么仍然没有答案**\n\n<!-- 需要修订长期方向时回到地核，提炼理解时回到月亮；年度文字保留当时的判断背景。 -->\n\n## 得失与取舍\n\n**值得感谢与珍惜的事**\n\n\n**需要承认的遗憾和代价**\n\n\n**想放下的承诺或惯性**\n\n## 下一年度方向\n\n**希望过怎样的生活**\n\n\n**少量真正重要的方向**\n\n\n**怎样为这些方向留出容量**\n\n<!-- 不必现在排满一年任务。方向服务于现实生活；季度、项目与 TaskNotes 再承接具体安排。 -->\n"
+    }
+  },
+  "specialTemplates": {
+    "bookStudy": {
+      "template": "书籍研读.md",
+      "body": "## 参考资源\n\n| 书籍信息 | 记录 |\n| --- | --- |\n| 书名 / 作者 |  |\n| 版本 / 译者 |  |\n| 本次阅读范围 |  |\n\n<!-- 关联真实书籍文件或资源笔记，页码应对应本版本。Book Reader 继续负责阅读与进度；本篇负责理解，不复制阅读状态。 -->\n\n## 阅读问题\n\n**为什么现在读这本书**\n\n\n**最希望回答的问题**\n\n## 全书脉络\n\n**作者在处理什么问题**\n\n\n**论述或叙事怎样展开**\n\n<!-- 论述类记录论证关系，文学类记录叙事线索及主题；不要把整份目录复制当作理解。 -->\n\n## 摘录\n\n### 章节 / 页码 · 主题\n\n**原文**\n\n\n**我的批注**\n\n<!-- 按需重复；明确区分引用和自己的话。留下这段的原因，比摘录数量更重要。 -->\n\n## 我的解释\n\n**最值得保留的理解**\n\n\n**它怎样回应阅读问题**\n\n\n**与已有经验或其他观点的对照**\n\n## 疑点与延伸\n\n**还不能理解或不完全赞同的部分**\n\n\n**需要查证的依据**\n\n## 阅读之后\n\n**可以提炼为独立认知的内容**\n\n\n**值得尝试或继续阅读的方向**\n\n<!-- 形成自己的理解后创建关联认知，阅读笔记与书籍保留；不是每条摘录都应自动变成认知。 -->\n"
+    },
+    "amytisArticle": {
+      "template": "Amytis文章.md",
+      "body": "<!-- amytis:public:start -->\n# {{title}}\n\n## 开篇\n\n<!-- 用场景、问题或核心判断引出主题，让读者知道为什么继续读。标题与段落结构可以按文章体裁改写。 -->\n\n\n## 展开\n\n### 一个主要段落\n\n<!-- 围绕一条主线展开：观点与依据、事情的经过、方法与例子。按需要增减小节；照片、引文及说明放在对应段落。 -->\n\n\n## 结语\n\n<!-- 回应开篇，留下有依据的理解或余味；不必强行写口号式总结。删去空小节后再预览。 -->\n\n\n<!-- 需要引用时在正文适当位置添加真实出处；不要写虚构链接。此标记之上的文字将作为公开正文，包括隐藏注释，提示使用完请删除。 -->\n<!-- amytis:public:end -->\n\n## 写作准备（内部）\n\n**写给谁，想让读者获得什么**\n\n\n**核心主线与需要补齐的依据**\n\n<!-- 构思、私人材料和编辑备忘留在公开标记外。写作项目可选，不重复维护属性中的项目链接。 -->\n\n## 发布检查（内部）\n\n- [ ] 正文已完成，空标题、写作提示及私人信息已清理\n- [ ] 引用、链接和附件有效，使用权限已核对\n- [ ] 在“Amytis：写作与发布”登记语言、形态、标题及公开范围\n- [ ] 预览网址、标签、封面及组织关系，明确允许公开\n- [ ] 主动上传后刷新结果，确认当前版本实际上线\n\n## 反馈与修订（内部）\n\n**收到的反馈与后续修订**\n\n<!-- 此处及其他内部段落不上传。上传、合并、上线是不同状态，不能只凭上传成功标记已发布。 -->\n"
+    },
+    "amytisArticleEn": {
+      "body": "<!-- amytis:public:start -->\n# {{title}}\n\n## Opening\n\n<!-- Start with a scene, a question, or the central claim. Rename these headings to suit the piece. -->\n\n\n## Main text\n\n### A central section\n\n<!-- Develop one thread through events, evidence, examples, or explanation. Place images and citations beside the passage they support. -->\n\n\n## Closing\n\n<!-- Return to the opening without forcing a slogan or a universal conclusion. Remove empty sections and writing prompts before previewing. -->\n\n\n<!-- Add real sources where needed. Everything inside these markers, including hidden comments, belongs to the public export. -->\n<!-- amytis:public:end -->\n\n## Writing notes (private)\n\n**Who is this for, and what should the reader take away?**\n\n\n**Central thread and evidence still needed**\n\n## Publication checks (private)\n\n- [ ] Finish the text and remove empty sections, prompts, and private information\n- [ ] Check references, links, assets, and permissions\n- [ ] Register English (en), the content kind, title, and explicit public range\n- [ ] Preview the URL, tags, cover, and organization before granting permission\n- [ ] Upload explicitly and verify the current version is live\n\n## Feedback and revisions (private)\n\n<!-- These private sections are excluded from export. Upload, merge, and live deployment are separate states. -->\n"
+    },
+    "amytisChapter": {
+      "body": "<!-- amytis:public:start -->\n# {{title}}\n\n## 本章起点\n\n<!-- 承接读者已有背景，说明本章要处理的事件、问题或论点。不要在此复制整本书的大纲。 -->\n\n\n## 本章展开\n\n### 一个主要段落\n\n<!-- 围绕一条主线展开：观点与依据、事情的经过、方法与例子。按需要增减小节；照片、引文及说明放在对应段落。 -->\n\n\n## 本章收束\n\n<!-- 回应本章开头，留下理解或下一章的自然衔接。章节排序由书籍大纲管理，不在正文维护重复目录。 -->\n\n\n<!-- 需要引用时在正文适当位置添加真实出处；不要写虚构链接。此标记之上的文字将作为公开正文，包括隐藏注释，提示使用完请删除。 -->\n<!-- amytis:public:end -->\n\n## 写作准备（内部）\n\n**写给谁，想让读者获得什么**\n\n\n**核心主线与需要补齐的依据**\n\n<!-- 构思、私人材料和编辑备忘留在公开标记外。写作项目可选，不重复维护属性中的项目链接。 -->\n\n## 发布检查（内部）\n\n- [ ] 正文已完成，空标题、写作提示及私人信息已清理\n- [ ] 引用、链接和附件有效，使用权限已核对\n- [ ] 在“Amytis：写作与发布”登记语言、形态、标题及公开范围\n- [ ] 预览网址、标签、封面及组织关系，明确允许公开\n- [ ] 主动上传后刷新结果，确认当前版本实际上线\n\n## 反馈与修订（内部）\n\n**收到的反馈与后续修订**\n\n<!-- 此处及其他内部段落不上传。上传、合并、上线是不同状态，不能只凭上传成功标记已发布。 -->\n"
+    },
+    "amytisChapterEn": {
+      "body": "<!-- amytis:public:start -->\n# {{title}}\n\n## Chapter opening\n\n<!-- Establish this chapter’s scene or question using the reader’s existing context. Do not copy the entire book outline here. -->\n\n\n## Chapter development\n\n### A central section\n\n<!-- Develop one thread through events, evidence, examples, or explanation. Place images and citations beside the passage they support. -->\n\n\n## Chapter closing\n\n<!-- Resolve the chapter’s opening or lead naturally onward. The book outline manages chapter order; do not duplicate its contents here. -->\n\n\n<!-- Add real sources where needed. Everything inside these markers, including hidden comments, belongs to the public export. -->\n<!-- amytis:public:end -->\n\n## Writing notes (private)\n\n**Who is this for, and what should the reader take away?**\n\n\n**Central thread and evidence still needed**\n\n## Publication checks (private)\n\n- [ ] Finish the text and remove empty sections, prompts, and private information\n- [ ] Check references, links, assets, and permissions\n- [ ] Register English (en), the content kind, title, and explicit public range\n- [ ] Preview the URL, tags, cover, and organization before granting permission\n- [ ] Upload explicitly and verify the current version is live\n\n## Feedback and revisions (private)\n\n<!-- These private sections are excluded from export. Upload, merge, and live deployment are separate states. -->\n"
+    },
+    "amytisIndex": {
+      "body": "<!-- amytis:public:start -->\n# {{title}}\n\n<!-- amytis:public:end -->\n\n## 组织定位（内部）\n\n**面向谁，组织什么内容**\n\n\n**读者可以获得什么**\n\n<!-- 专题聚合独立内容；系列提供循序阅读；书籍组织长篇章节。专题与系列不渲染目录页正文，公开介绍填面板摘要，不在公开区间堆放介绍。书籍介绍可明确写入公开区间。 -->\n\n## 结构与顺序（内部）\n\n**划分与排序的理由**\n\n\n**仍缺少的内容及其职责**\n\n<!-- 使用发布面板维护成员；专题和系列保存有序 site_members，书籍保存 site_outline。这里解释设计理由，不再复制一份成员清单。章节正文写在各自成果笔记。 -->\n\n## 发布检查（内部）\n\n- [ ] 定位、标题、摘要与实际成员一致\n- [ ] 成员存在且顺序合理，没有重复归属或缺失章节\n- [ ] 目录页与成员分别明确允许公开，未公开成员未被隐式发布\n- [ ] 预览所有网址、链接、封面和语言\n- [ ] 主动上传后逐项确认当前版本实际上线\n\n## 维护记录（内部）\n\n**结构变化的理由与读者反馈**\n\n<!-- 不通过本地改名、移动或归档撤稿；已上线网址调整需使用明确迁移流程。 -->\n"
+    },
+    "amytisIndexEn": {
+      "body": "<!-- amytis:public:start -->\n# {{title}}\n\n<!-- amytis:public:end -->\n\n## Purpose (private)\n\n**Audience, scope, and intended reading experience**\n\n<!-- Collections group independent entries; series provide a reading sequence; books organize chapters. Collection and series index prose is not rendered: put the public introduction in the excerpt. A book introduction may be written explicitly inside the public range. -->\n\n## Structure (private)\n\n**Why this grouping and order make sense**\n\n\n**Missing pieces and their intended roles**\n\n<!-- Manage members in the publishing panel. site_members stores collection/series order; site_outline stores book structure. Do not maintain a second member list here. -->\n\n## Publication checks (private)\n\n- [ ] Title, excerpt, purpose, and members agree\n- [ ] Members exist and their order and ownership are valid\n- [ ] The index and each public member have separate permission\n- [ ] Preview URLs, language, references, and assets\n- [ ] Upload explicitly, then verify the current deployment\n\n## Maintenance notes (private)\n\n<!-- Local renames, moves, and archives do not withdraw remote content. Changes to live URLs require an explicit migration. -->\n"
+    }
+  },
+  "templateRevision": "2026-10-04-model-writing-1",
+  "importTemplates": {
+    "rss": "# {{title}}\n\n## 原始内容\n\n{{content}}\n\n## 来源\n\n[原文]({{link}})\n\n## 处理记录\n\n**为什么保存，以及值得研读的部分**\n\n\n<!-- 原文保留在上面；个人解释另建研读。保存文章不等于确认其观点，processed 只表示已处理。 -->\n"
+  }
+}

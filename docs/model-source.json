@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 3,
+  "entityCount": 18,
+  "usage": "Original inspect and collect only, read-only facade",
+  "files": {
+    "project-index.cjs": "22500912fa52d01d9091ef0d376827b797183c2358be8fc8d29d592c175d6f90",
+    "system-engine.cjs": "f485a8ea2952d98b0eb1a904a0980b13517d5975a8353ad435df2cfaa463315b",
+    "system-schema.json": "df268176819d5d2e07efda4172fd758f2df27aba29a8ba3f486ecf77ed99d46d"
+  }
+}

@@ -1,0 +1,110 @@
+name: Native observatory verification
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore: ['docs/PROGRESS.md']
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: native-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '22'}
+      - run: npm ci --no-audit --no-fund
+      - run: npm run check
+      - run: npm test
+      - name: Build once for every downstream test
+        run: npm run build
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with: {name: immutable-build, path: dist/, retention-days: 2, if-no-files-found: error}
+  browser:
+    needs: quality-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '22'}
+      - run: npm ci --no-audit --no-fund
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with: {name: immutable-build, path: dist/}
+      - run: node scripts/verify-build.mjs
+      - run: npx playwright install --with-deps chromium
+      - run: npm run browser
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with: {name: browser-evidence, path: test-results/, retention-days: 2}
+  host:
+    needs: quality-build
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: windows-latest, version: '1.14.4'}
+          - {os: windows-latest, version: '1.13.7'}
+          - {os: ubuntu-latest, version: '1.14.4'}
+    runs-on: ${{ matrix.os }}
+    env:
+      OBSIDIAN_VERSION: ${{ matrix.version }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '22'}
+      - run: npm ci --no-audit --no-fund
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with: {name: immutable-build, path: dist/}
+      - run: node scripts/verify-build.mjs
+      - run: node scripts/fixtures.mjs
+      - name: Install Linux host display dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y xvfb libasound2t64
+      - name: Verify native host (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run host
+      - name: Verify native host (Windows)
+        if: runner.os == 'Windows'
+        run: npm run host
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: host-${{ matrix.os }}-${{ matrix.version }}
+          path: test-results/host/
+          retention-days: 2
+  gate:
+    needs: [quality-build, browser, host]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reject any required failure or skip
+        env:
+          REQUIRED_RESULTS: ${{ toJSON(needs) }}
+        run: |
+          node -e "for(const [name,result] of Object.entries(JSON.parse(process.env.REQUIRED_RESULTS)))if(result.result!=='success')throw Error(name+': '+result.result)"
+  review-build:
+    needs: gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '22'}
+      - run: npm ci --no-audit --no-fund
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with: {name: immutable-build, path: dist/}
+      - run: npm run package
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: development-review-build-not-final-candidate
+          path: |
+            dist/cosmos-observatory-next.zip
+            dist/SHA256SUMS
+            dist/integrity.json
+          retention-days: 2

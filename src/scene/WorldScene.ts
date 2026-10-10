@@ -1,0 +1,101 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { TransformControls } from 'three/addons/controls/TransformControls.js';
+import { DragControls } from 'three/addons/controls/DragControls.js';
+import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { SphericalGraph } from '../framework/cosmograph/graph/SphericalGraph';
+import type { Snapshot, WorldLayout, FileDescriptor, WorldDescriptor, Vec3 } from '../core/types';
+import type { Settings } from '../core/settings';
+
+type Visual = ReturnType<WorldScene['makeFile']>;
+interface WorldVisual { group:THREE.Group; cloud:THREE.Group; label:CSS2DObject; title:HTMLButtonElement; aura:THREE.Mesh; anchor:THREE.Mesh; files:Map<string,Visual>; positions:Map<string,THREE.Vector3>; radius:number; signature:string; layout:WorldLayout; orbit:THREE.LineLoop }
+export interface SceneCallbacks { select(id:string|null):void; selectWorld(id:string):void; layout(id:string,value:WorldLayout):void; error(message:string):void }
+
+/** Extends the full upstream renderer; owns only vault projection and multi-world interaction. */
+export class WorldScene extends SphericalGraph {
+  private worlds=new Map<string,WorldVisual>();private files=new Map<string,Visual>();private snapshot:Snapshot|undefined;private settings:Settings;private orbit:OrbitControls;private transform:TransformControls;private drag:DragControls;private anchors:THREE.Object3D[]=[];private layoutMode=false;private selectedWorld:string|undefined;private tickFrame=0;private lastFrame=0;private animationTime=0;private disposed=false;private edgeLines:THREE.LineSegments;private decorations=new THREE.Group();private spider:THREE.Object3D|undefined;private mixer:THREE.AnimationMixer|undefined;private spiderClips=new Map<string,THREE.AnimationAction>();private spiderAction='';private spiderTarget:string|undefined;private spiderRoute:string[]=[];private spiderTask:string|undefined;private currentSettingsVersion='';private abort=new AbortController();private initialCamera=false;private showFileId:string|undefined;
+  constructor(canvas:HTMLCanvasElement,settings:Settings,spiderURL:string,private callbacks:SceneCallbacks){
+    super(canvas);this.settings=settings;cancelAnimationFrame(this.animationFrame);
+    // Keep CosmoGraph's complete scene, materials, textures, lights, bloom, labels and native resize.
+    this.root.visible=false;this.root.rotation.set(0,0,0);this.camera.far=500;this.camera.updateProjectionMatrix();
+    this.orbit=new OrbitControls(this.camera,canvas);this.orbit.enableDamping=true;this.orbit.minDistance=5;this.orbit.maxDistance=150;this.orbit.target.set(0,1,0);
+    this.transform=new TransformControls(this.camera,canvas);this.transform.setSize(.8);this.scene.add(this.transform.getHelper());
+    this.transform.addEventListener('dragging-changed',event=>{this.orbit.enabled=!event.value;this.drag.enabled=this.layoutMode&&!event.value;});
+    this.transform.addEventListener('mouseUp',()=>this.saveSelected());
+    this.drag=new DragControls(this.anchors,this.camera,canvas);this.drag.enabled=false;
+    this.drag.addEventListener('dragstart',event=>{this.orbit.enabled=false;const id=event.object.userData.worldId as string;this.selectWorld(id);});
+    this.drag.addEventListener('drag',event=>{const id=event.object.userData.worldId as string,w=this.worlds.get(id);if(w){w.group.position.copy(event.object.position);this.updateEdges();}});
+    this.drag.addEventListener('dragend',()=>{this.orbit.enabled=true;this.saveSelected();});
+    this.edgeLines=new THREE.LineSegments(new THREE.BufferGeometry(),new THREE.LineBasicMaterial({color:0x9fc0d8,transparent:true,opacity:.16,depthWrite:false}));this.scene.add(this.edgeLines,this.decorations);
+    let downX=0,downY=0;
+    canvas.addEventListener('pointerdown',event=>{downX=event.clientX;downY=event.clientY;},{signal:this.abort.signal});
+    canvas.addEventListener('pointerup',event=>{if(Math.hypot(event.clientX-downX,event.clientY-downY)>4||this.transform.dragging)return;this.updatePointer(event);this.raycaster.setFromCamera(this.pointer,this.camera);const intersections=this.raycaster.intersectObjects([...this.hitMeshes,...this.anchors],false);const hit=intersections[0];if(hit){const worldId=hit.object.userData.worldId as string|undefined;if(worldId)this.selectWorld(worldId);else{const id=hit.object.userData.node?.id as string|undefined;if(id)this.selectFile(id);}}},{signal:this.abort.signal});
+    canvas.addEventListener('keydown',event=>{if(event.key==='Escape'){this.transform.detach();this.callbacks.select(null);}if(event.key.toLowerCase()==='r')this.transform.setMode('rotate');if(event.key.toLowerCase()==='g')this.transform.setMode('translate');},{signal:this.abort.signal});
+    new GLTFLoader().load(spiderURL,gltf=>{if(this.disposed){this.disposeObject(gltf.scene);return;}this.spider=gltf.scene;const box=new THREE.Box3().setFromObject(gltf.scene),size=box.getSize(new THREE.Vector3()).length();gltf.scene.userData.modelSize=Math.max(size,.001);this.mixer=new THREE.AnimationMixer(gltf.scene);for(const clip of gltf.animations)this.spiderClips.set(clip.name.split('_').pop()!.toLowerCase(),this.mixer.clipAction(clip));gltf.scene.traverse(object=>{if(object instanceof THREE.Mesh){const material=new THREE.MeshStandardMaterial({color:String(this.settings.spiderColor),emissive:String(this.settings.spiderColor),emissiveIntensity:.28,metalness:.2,roughness:.5});if(Array.isArray(object.material))object.material.forEach(m=>m.dispose());else object.material.dispose();object.material=material;}});gltf.scene.position.set(0,1,0);this.scene.add(gltf.scene);this.spiderAnimation('idle');},undefined,error=>this.callbacks.error(`蜘蛛模型加载失败: ${String(error)}`));
+    this.configure(settings);this.tickFrame=requestAnimationFrame(this.tick);
+  }
+  // Original pointer controls rotate a single sphere. Multi-world mode uses Three's mature controls.
+  protected override bindEvents(){}
+  private makeFile(file:FileDescriptor,position:THREE.Vector3,color:number,center:boolean){return this.createNodeVisual({id:file.id,title:file.name,path:file.path,group:file.worldId,kind:'note'},position,color,color,center,center);}
+  private defaultLayout(index:number):WorldLayout{const angle=index*2.3999632297,distance=Number(this.settings.worldSpacing)*Math.sqrt(index+1)*.65;return {position:[Math.cos(angle)*distance,Math.sin(angle)*distance*.58+2,(index%3-1)*2.2],rotation:[0,0,0],locked:false};}
+  update(snapshot:Snapshot,layouts:Record<string,WorldLayout>){
+    this.snapshot=snapshot;const worldIds=new Set(snapshot.worlds.map(w=>w.id));
+    for(const [id,world] of this.worlds)if(!worldIds.has(id)){this.removeWorld(id,world);}
+    let budget=Number(this.settings.nodeBudget);
+    for(const [index,descriptor] of snapshot.worlds.entries()){
+      const members=snapshot.files.filter(f=>f.worldId===descriptor.id).sort((a,b)=>a.path.localeCompare(b.path));
+      const required=new Set([descriptor.centerId,snapshot.patrol.targetId,this.showFileId].filter(Boolean));
+      const selected=[...members.filter(f=>required.has(f.id)),...members.filter(f=>!required.has(f.id)).slice(0,Math.max(0,budget-required.size))];budget=Math.max(0,budget-selected.length);
+      let world=this.worlds.get(descriptor.id);if(!world){world=this.createWorld(descriptor,layouts[descriptor.id]??this.defaultLayout(index));this.worlds.set(descriptor.id,world);if(!layouts[descriptor.id])this.callbacks.layout(descriptor.id,world.layout);}
+      const saved=layouts[descriptor.id];if(saved&&!this.transform.dragging){world.layout={...saved};world.group.position.fromArray(saved.position);world.group.rotation.fromArray(saved.rotation);}
+      world.radius=world.layout.radius??Number(this.settings.worldRadius);world.aura.scale.setScalar(world.radius/3.66*1.08);world.orbit.scale.setScalar(world.radius*1.18);world.orbit.visible=!!this.settings.orbits;
+      (world.aura.material as THREE.ShaderMaterial).uniforms.uWorldColor.value.set(descriptor.color);(world.aura.material as THREE.ShaderMaterial).uniforms.uIntensity.value=Number(this.settings.aura);
+      world.title.textContent=`${descriptor.name} · ${members.length}${selected.length<members.length?`（隐藏 ${members.length-selected.length}）`:''}${descriptor.confirmed?'':' · 待确认'}${members.length?'':' · 空目录'}`;world.title.style.color=descriptor.color;world.label.position.set(0,world.radius+.35,0);
+      const wanted=new Set(selected.map(f=>f.id));for(const [id,visual] of world.files)if(!wanted.has(id)){world.cloud.remove(visual.group);this.disposeObject(visual.group);world.files.delete(id);world.positions.delete(id);this.files.delete(id);const hitIndex=this.hitMeshes.indexOf(visual.hit);if(hitIndex>=0)this.hitMeshes.splice(hitIndex,1);}
+      const signature=selected.map(f=>f.id).join('|')+`:${world.radius}:${descriptor.centerId}`;
+      const changed=signature!==world.signature;world.signature=signature;
+      for(const [i,file] of selected.entries()){
+        const center=file.id===descriptor.centerId;
+        let position=world.positions.get(file.id);
+        if(!position||changed){const direction=this.fibonacciDirection(i,Math.max(selected.length,1));const layer=i%5===0?.55:1;position=center?new THREE.Vector3():direction.multiplyScalar(world.radius*layer);world.positions.set(file.id,position);}
+        let visual=world.files.get(file.id);if(!visual){visual=this.makeFile(file,position,new THREE.Color(descriptor.color).getHex(),center);world.cloud.add(visual.group);world.files.set(file.id,visual);this.files.set(file.id,visual);}
+        visual.group.userData.basePosition=position;visual.group.position.copy(position);visual.group.scale.setScalar(Number(this.settings.nodeSize)*(center?Number(this.settings.centerScale):1));visual.core.material.color.set(descriptor.color);visual.core.material.emissive.set(descriptor.color);visual.glow.material.color.set(descriptor.color);visual.marker.material.color.set(descriptor.color);if(visual.label)visual.label.element.textContent=file.name;
+      }
+      world.anchor.position.copy(world.group.position);world.anchor.userData.locked=world.layout.locked;
+    }
+    this.nodeVisuals.length=0;this.nodeVisuals.push(...this.files.values());this.drag.objects=this.anchors.filter(a=>!a.userData.locked);this.updateEdges();this.updatePatrol(snapshot);
+  }
+  private createWorld(descriptor:WorldDescriptor,layout:WorldLayout):WorldVisual{
+    const group=new THREE.Group(),cloud=new THREE.Group();group.add(cloud);group.position.fromArray(layout.position);group.rotation.fromArray(layout.rotation);this.scene.add(group);
+    const aura=this.createOuterAura();(aura.material as THREE.ShaderMaterial).depthTest=true;group.add(aura);
+    const title=document.createElement('button');title.className='world-label';title.type='button';title.addEventListener('click',event=>{event.stopPropagation();this.selectWorld(descriptor.id);},{signal:this.abort.signal});title.addEventListener('pointerdown',event=>event.stopPropagation(),{signal:this.abort.signal});const label=new CSS2DObject(title);group.add(label);
+    // This anchor is a documented layout handle, never a file node or real edge.
+    const anchor=new THREE.Mesh(new THREE.SphereGeometry(.23,16,12),new THREE.MeshBasicMaterial({color:descriptor.color,transparent:true,opacity:.25}));anchor.position.copy(group.position);anchor.userData.worldId=descriptor.id;this.scene.add(anchor);this.anchors.push(anchor);
+    const points=Array.from({length:96},(_,i)=>new THREE.Vector3(Math.cos(i/96*Math.PI*2),-.12,Math.sin(i/96*Math.PI*2)));const orbit=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:descriptor.color,transparent:true,opacity:.09,depthWrite:false}));orbit.rotation.x=.28;group.add(orbit);
+    return {group,cloud,label,title,aura,anchor,orbit,files:new Map(),positions:new Map(),radius:Number(this.settings.worldRadius),signature:'',layout:{...layout}};
+  }
+  configure(settings:Settings){this.settings=settings;this.camera.fov=Number(settings.fov);this.camera.updateProjectionMatrix();if(!this.initialCamera){this.camera.position.set(0,7,Number(settings.cameraDistance));this.initialCamera=true;}this.orbit.rotateSpeed=Number(settings.sensitivity);this.orbit.zoomSpeed=Number(settings.sensitivity);this.renderer.setPixelRatio(Math.min(window.devicePixelRatio,Number(settings.pixelRatio)));this.renderer.toneMappingExposure=Number(settings.exposure);this.bloomPass.strength=Number(settings.bloom);this.setCosmicBackground(!!settings.background);this.edgeLines.visible=!!settings.edges;const material=this.edgeLines.material as THREE.LineBasicMaterial;material.opacity=Number(settings.edgeOpacity);material.linewidth=Number(settings.edgeWidth);this.labelMode=String(settings.labelMode) as any;}
+  setLayoutMode(enabled:boolean,mode:'translate'|'rotate'='translate'){this.layoutMode=enabled;this.drag.enabled=enabled;this.transform.setMode(mode);if(!enabled)this.transform.detach();else if(this.selectedWorld)this.selectWorld(this.selectedWorld);}
+  selectWorld(id:string){const world=this.worlds.get(id);if(!world)return;this.selectedWorld=id;this.callbacks.selectWorld(id);if(this.layoutMode&&!world.layout.locked)this.transform.attach(world.group);else this.transform.detach();}
+  selectFile(id:string){this.showFileId=id;this.callbacks.select(id);const visual=this.files.get(id);if(visual){visual.group.getWorldPosition(this.tempWorld);this.orbit.target.copy(this.tempWorld);}}
+  filterFiles(text:string){for(const visual of this.files.values()){const match=!text||visual.node.path.toLocaleLowerCase().includes(text.toLocaleLowerCase());visual.core.material.opacity=match?.95:.12;visual.glow.material.opacity=match?.4:.02;if(visual.label)visual.label.element.style.visibility=match?'visible':'hidden';}}
+  private saveSelected(){if(!this.selectedWorld)return;const world=this.worlds.get(this.selectedWorld);if(!world||world.layout.locked)return;world.layout={...world.layout,position:world.group.position.toArray() as Vec3,rotation:[world.group.rotation.x,world.group.rotation.y,world.group.rotation.z]};world.anchor.position.copy(world.group.position);this.callbacks.layout(this.selectedWorld,{...world.layout});this.updateEdges();}
+  private updateEdges(){if(!this.snapshot)return;const points:number[]=[];const start=new THREE.Vector3(),end=new THREE.Vector3();this.scene.updateMatrixWorld(true);for(const relation of this.snapshot.relations.slice(0,Number(this.settings.edgeBudget))){const a=this.files.get(relation.source),b=this.files.get(relation.target);if(!a||!b)continue;a.group.getWorldPosition(start);b.group.getWorldPosition(end);points.push(start.x,start.y,start.z,end.x,end.y,end.z);}this.edgeLines.geometry.dispose();this.edgeLines.geometry=new THREE.BufferGeometry();this.edgeLines.geometry.setAttribute('position',new THREE.Float32BufferAttribute(points,3));}
+  private updatePatrol(snapshot:Snapshot){const patrol=snapshot.patrol;if(patrol.taskId===this.spiderTask)return;this.spiderTask=patrol.taskId;this.spiderTarget=patrol.targetId;this.spiderRoute=[...patrol.route];if(this.spiderRoute[0]===patrol.fromId)this.spiderRoute.shift();if(!this.spiderRoute.length&&patrol.targetId)this.spiderRoute=[patrol.targetId];}
+  private spiderAnimation(name:string){if(name===this.spiderAction)return;this.spiderClips.get(this.spiderAction)?.fadeOut(.2);this.spiderClips.get(name)?.reset().fadeIn(.2).play();this.spiderAction=name;}
+  private tick=(at:number)=>{
+    if(this.disposed)return;this.tickFrame=requestAnimationFrame(this.tick);if(at-this.lastFrame<1000/Number(this.settings.fps))return;const delta=Math.min((at-this.lastFrame)/1000,.1);this.lastFrame=at;const moving=!this.settings.animationPaused&&!this.settings.reducedMotion&&!this.reducedMotion;
+    this.orbit.update();if(moving){this.animationTime+=delta;for(const world of this.worlds.values()){if(this.transform.object!==world.group)world.cloud.rotation.y+=delta*Number(this.settings.worldRotation);for(const [id,visual] of world.files){const base=world.positions.get(id)!;const phase=base.x*1.2+base.z*2;visual.group.position.copy(base);visual.group.position.y+=Math.sin(this.animationTime*Number(this.settings.floatSpeed)+phase)*Number(this.settings.floatAmplitude);}}
+      for(const material of this.animatedMaterials)if(material.uniforms.uTime)material.uniforms.uTime.value=this.animationTime;
+    }
+    this.scene.updateMatrixWorld(true);let labelCount=0;for(const visual of this.files.values())if(visual.label){const visible=this.labelMode!=='none'&&(visual.node.id===this.showFileId||visual.node.id===this.spiderTarget||labelCount++<Number(this.settings.labelBudget));visual.label.element.style.display=visible?'':'none';visual.label.element.classList.toggle('is-inspecting',visual.node.id===this.snapshot?.patrol.targetId&&this.snapshot.patrol.phase==='checking');}
+    for(const world of this.worlds.values())world.anchor.position.copy(world.group.position);this.updateEdges();
+    if(this.spider){const distance=this.camera.position.distanceTo(this.spider.position),height=this.canvas.parentElement?.clientHeight??800;const size=Number(this.settings.spiderSize)*2*distance*Math.tan(THREE.MathUtils.degToRad(this.camera.fov)/2)/height;this.spider.scale.setScalar(size/Number(this.spider.userData.modelSize));const targetId=this.spiderRoute[0]??this.spiderTarget;const visual=targetId?this.files.get(targetId):undefined;let walking=false;if(moving&&visual&&this.snapshot?.patrol.phase!=='paused'){const target=visual.group.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,.22,0));const remaining=this.spider.position.distanceTo(target);if(remaining>.15){this.spider.position.lerp(target,Math.min(1,delta*Number(this.settings.spiderSpeed)/remaining));this.spider.lookAt(target);walking=true;}else if(this.spiderRoute.length>1)this.spiderRoute.shift();}this.spiderAnimation(walking?'walk':this.snapshot?.patrol.phase==='checking'?'attack':'idle');if(moving)this.mixer?.update(delta);}
+    this.composer.render();this.labelRenderer.render(this.scene,this.camera);
+  };
+  debug(){const positions=[...this.files.values()].map(v=>({id:v.node.id,local:v.group.position.toArray(),world:v.group.getWorldPosition(new THREE.Vector3()).toArray(),geometry:v.core.geometry.type}));return {positions,worlds:[...this.worlds].map(([id,w])=>({id,position:w.group.position.toArray(),rotation:w.group.rotation.toArray(),locked:w.layout.locked})),camera:this.camera.position.toArray(),renderer:'CosmoGraph.SphericalGraph',spiderLoaded:!!this.spider,edgeVertices:this.edgeLines.geometry.getAttribute('position')?.count??0};}
+  private disposeObject(object:THREE.Object3D){object.traverse(child=>{if(child instanceof CSS2DObject)child.element.remove();const mesh=child as THREE.Mesh;mesh.geometry?.dispose();if(Array.isArray(mesh.material))mesh.material.forEach(m=>m.dispose());else mesh.material?.dispose();});}
+  private removeWorld(id:string,world:WorldVisual){for(const [fileId,visual] of world.files){this.files.delete(fileId);const index=this.hitMeshes.indexOf(visual.hit);if(index>=0)this.hitMeshes.splice(index,1);}this.scene.remove(world.group,world.anchor);this.disposeObject(world.group);this.disposeObject(world.anchor);const index=this.anchors.indexOf(world.anchor);if(index>=0)this.anchors.splice(index,1);this.worlds.delete(id);}
+  override destroy(){this.disposed=true;cancelAnimationFrame(this.tickFrame);this.abort.abort();this.orbit.dispose();this.transform.dispose();this.drag.dispose();this.mixer?.stopAllAction();if(this.spider)this.mixer?.uncacheRoot(this.spider);super.destroy();}
+}

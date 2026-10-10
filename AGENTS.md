@@ -13,6 +13,6 @@ This project produces a native desktop Obsidian plugin, `cosmos-observatory-next
 - Every configurable product parameter must have a visual control.
 - Do not install the new plugin in the user's live vault, configure hooks or publish a release before candidate review. Making the development repository public is already authorized.
 - Do not use subagents or migrate the old project's source, tests, state, settings or Git history.
-- Keep remaining work and blocked cleanup truthful in docs/PROGRESS.md. Required failed or skipped CI jobs fail their aggregate gate.
+- Keep implementation and verification status truthful in docs/PROGRESS.md. The user removed old-project cleanup from this task on 2026-10-10; do not inspect, delete or migrate old material. Required failed or skipped CI jobs fail their aggregate gate.
 
 The approved requirements are in docs/DEVELOPMENT-PLAN.md. Later direct user instructions take precedence.

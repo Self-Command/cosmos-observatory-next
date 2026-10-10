@@ -1,0 +1,10 @@
+{
+  "id": "cosmos-observatory-next",
+  "name": "宇宙观测台",
+  "version": "0.1.0",
+  "minAppVersion": "1.13.7",
+  "description": "A read-only 3D vault observatory with movable file worlds and evidence-driven patrol.",
+  "author": "Self-Command",
+  "authorUrl": "https://github.com/Self-Command",
+  "isDesktopOnly": true
+}
