@@ -1,5 +1,5 @@
 import { createRoot, type Root } from 'react-dom/client';
-import type { WorkspaceLeaf } from 'obsidian';
+import {TFile,type WorkspaceLeaf} from 'obsidian';
 import { CosmographView as UpstreamView } from '../framework/cosmograph/obsidian/CosmographView';
 import type ObservatoryPlugin from '../main';
 import type UpstreamPlugin from '../framework/cosmograph/obsidian/plugin';
@@ -17,7 +17,7 @@ export class CosmographView extends UpstreamView {
   override async onOpen(){
     this.contentEl.empty();this.contentEl.addClass('cosmos-observatory-host');const host=this.contentEl.createDiv({cls:'cosmos-shadow-host'});const shadow=host.attachShadow({mode:'open'});const style=document.createElement('style');style.textContent=theme;shadow.append(style);const mount=document.createElement('div');mount.className='cosmos-mount';shadow.append(mount);const portal=document.createElement('div');portal.className='cosmos-portal dark';shadow.append(portal);
     try{this.engineController=await this.productPlugin.acquireCoordinator();const pluginDirectory=this.productPlugin.manifest.dir??`${this.app.vault.configDir}/plugins/${this.productPlugin.manifest.id}`;const assetPath=`${pluginDirectory}/assets/spider.glb`;const modelBytes=await this.app.vault.adapter.readBinary(assetPath);const spiderURL=URL.createObjectURL(new Blob([modelBytes],{type:'model/gltf-binary'}));this.modelURL=spiderURL;
-    this.reactRoot=createRoot(mount);this.reactRoot.render(<PortalContext.Provider value={portal}><Dashboard controller={this.engineController} spiderURL={spiderURL} openFile={path=>{void this.app.workspace.openLinkText(path,'',true);}}/></PortalContext.Provider>);}catch(error){const message=document.createElement('p');message.className='native-open-error';message.setAttribute('role','alert');message.textContent=`控制台初始化失败: ${String(error)}`;mount.append(message);console.error('Observatory open failure',error);}
+    this.reactRoot=createRoot(mount);this.reactRoot.render(<PortalContext.Provider value={portal}><Dashboard controller={this.engineController} spiderURL={spiderURL} openFile={async path=>{const file=this.app.vault.getAbstractFileByPath(path);if(!(file instanceof TFile))throw Error(`文件已删除或不在当前知识库：${path}`);await this.app.workspace.getLeaf(true).openFile(file);}}/></PortalContext.Provider>);}catch(error){const message=document.createElement('p');message.className='native-open-error';message.setAttribute('role','alert');message.textContent=`控制台初始化失败: ${String(error)}`;mount.append(message);console.error('Observatory open failure',error);}
   }
   override refreshGraph(){void this.engineController?.refresh();}
   override applySettings(){void this.engineController?.refresh();}
