@@ -33,6 +33,7 @@
 .search { width:190px;background:#08111db0!important;height:30px!important;font-size:11px; }
 .scene-toolbar { position:absolute;top:70px;left:20px;display:flex;gap:6px;align-items:center;z-index:30;flex-wrap:wrap;max-width:calc(100% - 30px); }
 .scene-toolbar button { font-size:10px;height:27px; }
+.node-hover {position:absolute;z-index:45;pointer-events:none;max-width:min(280px,90%);padding:9px 12px;border:1px solid #385363;border-radius:6px;background:#07121af2;color:#c9e4e8;font-size:11px;line-height:1.5;overflow-wrap:anywhere;box-shadow:0 4px 18px #0008;}.node-hover[hidden]{display:none;}.node-hover>div:first-child{color:#83eadb;font-weight:600;}
 .scene-toolbar [data-slot=badge] { font-size:10px;color:#8db2bd; }
 .panel-layer { position:absolute;inset:0 0 27px;pointer-events:none;z-index:12; }
 .observatory-panel { width:100%;height:100%;gap:0!important;padding:0!important;background:rgba(6,13,23,var(--panel-opacity))!important;border:1px solid #6387a929!important;backdrop-filter:blur(12px);border-radius:var(--radius)!important;overflow:hidden;box-shadow:0 12px 34px #0005; }
