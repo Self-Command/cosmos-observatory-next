@@ -3,7 +3,7 @@ import {writeFile} from 'node:fs/promises';
 test.use({video:'off'});
 test('Isolate GPU work with a new document and context for every render variant',async({page},info)=>{
   test.setTimeout(300000);const records=[];
-  for(const name of ['without-spider','without-aura','without-edges','without-spider-aura-bloom','empty-direct-render','default']){
+  for(const name of ['default','only-nodes','only-glow','only-aura','only-spider','only-lines','only-background','empty','empty-without-dom']){
     await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();
     await page.waitForFunction(()=>!!(document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any).__cosmosScene?.debug().spiderLoaded);
     await page.evaluate(name=>{
@@ -12,7 +12,7 @@ test('Isolate GPU work with a new document and context for every render variant'
       if(name==='without-bloom')scene.bloomPass.enabled=false;
       if(name==='without-panel-backdrop')for(const panel of shadow.querySelectorAll<HTMLElement>('.observatory-panel'))panel.style.backdropFilter='none';
       if(name.includes('without-dom'))for(const child of shadow.querySelectorAll<HTMLElement>('.cosmos-root>*,.cosmos-portal'))if(!child.classList.contains('cosmos-scene'))child.style.display='none';
-      const render=scene.composer.render.bind(scene.composer);scene.composer.render=()=>{if(name.includes('spider'))scene.spider.visible=false;if(name.includes('aura'))for(const world of scene.worlds.values())world.aura.visible=false;if(name.includes('bloom'))scene.bloomPass.enabled=false;if(name==='without-edges')scene.edgeLines.visible=false;if(name==='empty-direct-render'){for(const object of scene.scene.children)object.visible=false;scene.scene.background=null;scene.renderer.render(scene.scene,scene.camera);}else render();};
+      const render=scene.composer.render.bind(scene.composer);scene.composer.render=()=>{if(name!=='default'){for(const object of scene.scene.children)object.visible=false;scene.scene.background=null;scene.coreBatch.visible=name==='only-nodes';scene.glowBatch.visible=name==='only-glow';scene.edgeLines.visible=name==='only-lines';if(name==='only-background')scene.scene.background=scene.cosmicBackgroundTexture;if(name==='only-spider')scene.spider.visible=true;for(const world of scene.worlds.values()){world.group.visible=['only-aura','only-lines'].includes(name);world.aura.visible=name==='only-aura';world.orbits.visible=name==='only-lines';world.structure.visible=name==='only-lines';world.label.visible=false;}for(const object of scene.scene.children)if(object.isLight)object.visible=true;scene.renderer.render(scene.scene,scene.camera);}else render();};
     },name);
     await page.waitForTimeout(2000);
     const sample=()=>page.evaluate(()=>{const canvas=document.querySelector('#app')!.shadowRoot!.querySelector('canvas')!,scene=(canvas as any).__cosmosScene;const debug=scene.debug();return {at:performance.now(),frames:debug.frames,drawCalls:debug.drawCalls,triangles:debug.triangles,costs:debug.frameCosts,context:canvas.getContext('webgl2')!.getContextAttributes()};});
