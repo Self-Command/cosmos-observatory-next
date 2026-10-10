@@ -120,6 +120,7 @@
 .cosmos-portal .setting-number{min-width:0;}.cosmos-portal .setting-field input{min-width:0;max-width:100%;}
 .cosmos-portal .setting-number input{width:calc(8ch + 24px);flex-shrink:0;}.cosmos-portal .setting-number [data-slot=slider]{min-width:0;flex:1;}
 .selection-controls{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;}
+.cosmos-portal .settings-dialog{display:flex;flex-direction:column;overflow:hidden!important;}.settings-scroll{flex:1;min-height:0;overflow:auto;}.settings-dialog [data-slot=dialog-header]{flex-shrink:0;padding-right:20px;}
 .cosmos-portal .world-setting{min-width:0;}.cosmos-portal .world-setting label{min-width:0;}.cosmos-portal .vector-input input{width:33%;min-width:0;}
 .cosmos-portal [data-slot=tooltip-content]{max-width:min(280px,90vw);font-size:.9em;line-height:1.5;overflow-wrap:anywhere;}
 .file-row{min-width:0;display:flex;flex-direction:column;gap:4px;}.file-row>button{min-width:0;max-width:100%;justify-content:flex-start;white-space:normal;overflow-wrap:anywhere;height:auto;text-align:left;}

@@ -11,6 +11,7 @@ async function capture(page:Page,info:TestInfo,name:string){
   if(await popup.count()){
     await expect(popup).toBeVisible();const bounds=(await popup.boundingBox())!,viewport=page.viewportSize()!;
     expect(bounds.x).toBeGreaterThanOrEqual(-1);expect(bounds.y).toBeGreaterThanOrEqual(-1);expect(bounds.x+bounds.width).toBeLessThanOrEqual(viewport.width+1);expect(bounds.y+bounds.height).toBeLessThanOrEqual(viewport.height+1);
+    const close=popup.getByRole('button',{name:'Close',exact:true});await expect(close).toBeVisible();const closeBounds=(await close.boundingBox())!;expect(closeBounds.y).toBeGreaterThanOrEqual(bounds.y);expect(closeBounds.y+closeBounds.height).toBeLessThanOrEqual(bounds.y+bounds.height);
     const title=popup.getByRole('heading').first();await expect(title).toBeVisible();dialog=await popup.evaluate(element=>({width:element.clientWidth,scrollWidth:element.scrollWidth,font:getComputedStyle(element).fontSize,title:element.querySelector('h2')?.textContent}));expect((dialog as any).scrollWidth).toBeLessThanOrEqual((dialog as any).width+1);
     if(!await page.getByRole('listbox').count()){await page.keyboard.press('Tab');expect(await page.evaluate(()=>!!document.querySelector('#app')!.shadowRoot!.activeElement?.closest('.cosmos-portal'))).toBe(true);}
   }
@@ -37,7 +38,7 @@ test('Every panel, dialog, sheet, dropdown, select and tooltip has wide and narr
     await page.getByLabel('搜索文件',{exact:true}).fill(longPath);await capture(page,info,`${prefix}-search`);await page.keyboard.press('Enter');await page.getByRole('button',{name:'文件证据',exact:true}).click();await expect(page.getByRole('dialog')).toContainText(longPath);await capture(page,info,`${prefix}-file-sheet`);await close(page);
     await page.getByRole('button',{name:'打开设置',exact:true}).click();
     const groups=[...new Set(Object.values(registry).map(value=>value.group)),'独立世界','面板布局','导入导出'];
-    for(const group of groups){const tab=page.getByRole('tab',{name:group,exact:true});await tab.click();await expect(tab).toHaveAttribute('aria-selected','true');if(group==='导入导出')await page.getByRole('button',{name:'生成配置文本',exact:true}).click();await capture(page,info,`${prefix}-settings-${group}`);const scroller=page.getByRole('dialog');await scroller.evaluate(element=>element.scrollTop=element.scrollHeight);await capture(page,info,`${prefix}-settings-${group}-end`);await scroller.evaluate(element=>element.scrollTop=0);}
+    for(const group of groups){const tab=page.getByRole('tab',{name:group,exact:true});await tab.click();await expect(tab).toHaveAttribute('aria-selected','true');if(group==='导入导出')await page.getByRole('button',{name:'生成配置文本',exact:true}).click();await capture(page,info,`${prefix}-settings-${group}`);const scroller=page.getByRole('dialog').locator('.settings-scroll');await scroller.evaluate(element=>element.scrollTop=element.scrollHeight);await capture(page,info,`${prefix}-settings-${group}-end`);await scroller.evaluate(element=>element.scrollTop=0);}
     await close(page);
     await page.getByRole('button',{name:'面板列表',exact:true}).click();await expect(page.getByRole('menu')).toBeVisible();await capture(page,info,`${prefix}-panel-menu`);await page.keyboard.press('Escape');
   }
