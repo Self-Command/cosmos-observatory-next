@@ -1,5 +1,1 @@
-* text=auto eol=lf
-*.glb -text
-*.jpg -text
-docs/assets/dashboard-spheres-v2.svg -text
-src/model/reference/* -text
+vendor/test-plugins/** -text

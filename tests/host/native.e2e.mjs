@@ -1,7 +1,7 @@
 import { browser } from '@wdio/globals';import assert from 'node:assert/strict';import { mkdir,writeFile } from 'node:fs/promises';
 describe('Real Obsidian native plugin',()=>{
   it('loads, scans actual files, discovers folders and reports real syntax evidence',async()=>{
-    await browser.setWindowSize(1600,1050);
+    await browser.execute(()=>{const electron=require('electron');electron.remote?.getCurrentWindow()?.setSize(1600,1050);});
     await browser.executeObsidianCommand('cosmos-observatory-next:open-3d-knowledge-graph');await browser.waitUntil(async()=>browser.execute(()=>{const host=document.querySelector('.cosmos-shadow-host');const error=host?.shadowRoot?.querySelector('.native-open-error');if(error)throw Error(error.textContent);return !!host?.shadowRoot?.querySelector('.cosmos-root');}),{timeout:60000});
     const info=await browser.execute(()=>({versions:process.versions,obsidian:require('obsidian').apiVersion,plugins:Object.keys(app.plugins.plugins)}));await mkdir('test-results/host',{recursive:true});await writeFile('test-results/host/runtime.json',JSON.stringify(info,null,2));
     if(process.env.HOST_PROFILE==='combination')for(const id of ['tasknotes','dataview','quickadd','templater-obsidian','any-block','auto-mover'])assert.ok(info.plugins.includes(id),`Combination plugin ${id} did not enable`);

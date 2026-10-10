@@ -1,0 +1,12 @@
+{
+    "id": "quickadd",
+    "name": "QuickAdd",
+    "version": "2.12.0",
+    "minAppVersion": "1.11.4",
+    "description": "快速将新页面或内容添加到您的知识库。",
+    "author": "Christian B. B. Houmann",
+    "authorUrl": "https://bagerbach.com",
+    "fundingUrl": "https://www.buymeacoffee.com/chhoumann",
+    "helpUrl": "https://quickadd.obsidian.guide/docs/",
+    "isDesktopOnly": false
+}
