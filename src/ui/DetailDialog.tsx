@@ -1,4 +1,5 @@
 import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from './official/dialog';
+import {Sheet,SheetContent,SheetHeader,SheetTitle,SheetDescription} from './official/sheet';
 import {Button} from './official/button';
 import {EventBrowser,EventEvidence,FileBrowser,FileEvidence,WorldMap,coverageData,RelationRows,ChecksBrowser,SystemEvidence,SessionEvidence,type Detail,type EvidenceActions} from './EvidenceContent';
 import {ReplayControl} from './ReplayControl';
@@ -19,5 +20,6 @@ export function DetailDialog({value,close,snapshot,controller,actions,worldSetti
     case 'sessions':return <SessionEvidence snapshot={snapshot} controller={controller} actions={actions}/>;
     case 'replay':return <ReplayControl controller={controller} snapshot={snapshot} run={actions.run}/>;
   }};
+  if(value?.kind==='file')return <Sheet open onOpenChange={open=>{if(!open)close();}}><SheetContent className="evidence-sheet"><SheetHeader><SheetTitle>{value.title??titles.file}</SheetTitle><SheetDescription>{snapshot.replay?'历史采样数据':'当前知识库观测'} · 文件及关联证据</SheetDescription></SheetHeader><div className="detail-body" key={value.id}>{body()}</div></SheetContent></Sheet>;
   return <Dialog open={!!value} onOpenChange={open=>{if(!open)close();}}><DialogContent className="evidence-dialog"><DialogHeader><DialogTitle>{value?.title??(value?titles[value.kind]:'证据')}</DialogTitle><DialogDescription>{snapshot.replay?'历史采样数据':'当前知识库观测'} · 可查看记录与文件证据</DialogDescription></DialogHeader><div className="detail-body" key={`${value?.kind}:${value?.id??''}:${value?.mode??''}`}>{body()}</div></DialogContent></Dialog>;
 }
