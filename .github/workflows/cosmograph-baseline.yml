@@ -3,7 +3,9 @@ name: CosmoGraph upstream baseline
 on:
   push:
     branches: [main]
+    paths: ['vendor/cosmograph/**', '.github/workflows/cosmograph-baseline.yml']
   pull_request:
+    paths: ['vendor/cosmograph/**', '.github/workflows/cosmograph-baseline.yml']
   workflow_dispatch:
 
 permissions:

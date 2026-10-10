@@ -6,7 +6,7 @@ export interface HistoryAdapter { read():Promise<HistoryData|null>;write(value:H
 export class HistoryStore {
   private db:Low<HistoryData>;private queue=new PQueue({concurrency:1});
   constructor(state:PersistentState,adapter:HistoryAdapter=new Memory<HistoryData>()){this.db=new Low(adapter,{state,snapshots:[]});}
-  async load(){await this.db.read();return this.db.data;}
+  async load(){await this.db.read();if(!Array.isArray(this.db.data?.snapshots))throw Error('历史快照契约错误');this.db.data.snapshots=this.db.data.snapshots.filter(snapshot=>typeof snapshot?.at==='number'&&Array.isArray(snapshot.files)&&Array.isArray(snapshot.worlds)&&Array.isArray(snapshot.events)&&snapshot.results&&snapshot.patrol);return this.db.data;}
   snapshots(){return this.db.data.snapshots;}
   save(state:PersistentState,snapshot:Snapshot|undefined,days:number,mib:number){return this.queue.add(async()=>{
     this.db.data.state=structuredClone(state);if(snapshot)this.db.data.snapshots.push(structuredClone(snapshot));

@@ -11,7 +11,7 @@ export function adaptClaude(input:Record<string,any>,vault:string,at=Date.now())
   const lifecycle=hook==='SessionStart'||hook==='SessionEnd',pre=hook==='PreToolUse',run=String(input.tool_use_id??'session').slice(0,128),file=target(vault,input.tool_input?.file_path??input.tool_input?.path);
   const success=hook==='PostToolUse',result=hook==='PostToolUseFailure'?'failed':lifecycle||success?'success':'unknown';
   const action:ObservatoryEvent['action']=hook==='SessionStart'?'session.start':hook==='SessionEnd'?'session.end':pre?'tool.start':['Write','Edit','MultiEdit'].includes(input.tool_name)&&file?'modify':input.tool_name==='Read'&&file?'read.partial':['Grep','Glob'].includes(input.tool_name)?'search':'tool.end';
-  const sequence=lifecycle?0:pre?0:1,id=createHash('sha256').update(`${session}:${run}:${hook}:${file??''}`).digest('hex');
+  const sequence=hook==='SessionEnd'?1:lifecycle?0:pre?0:1,id=createHash('sha256').update(`${session}:${run}:${hook}:${file??''}`).digest('hex');
   return [{id,at,source:'claude-hook',action,sessionId:session,runId:run,status:result,sequence,...(file?{path:file}:{})}];
 }
 export function adaptCodex(input:Record<string,any>,vault:string,sequence:number,at=Date.now()):SourceEvent[]{

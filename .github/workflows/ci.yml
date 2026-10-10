@@ -72,7 +72,7 @@ jobs:
         if: matrix.profile == 'combination'
       - name: Install Linux host display dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y xvfb libasound2t64 ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y xvfb libasound2t64 ffmpeg fonts-noto-cjk
       - name: Verify native host (Linux)
         if: runner.os == 'Linux'
         run: xvfb-run -a npm run host
