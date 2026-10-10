@@ -2,6 +2,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import type { WorkspaceLeaf } from 'obsidian';
 import { CosmographView as UpstreamView } from '../framework/cosmograph/obsidian/CosmographView';
 import type ObservatoryPlugin from '../main';
+import type UpstreamPlugin from '../framework/cosmograph/obsidian/plugin';
 import { Dashboard } from '../ui/Dashboard';
 import { PortalContext } from '../ui/PortalContext';
 import theme from '../ui/theme.css';
@@ -9,7 +10,7 @@ import type { Coordinator } from './Coordinator';
 export const VIEW_TYPE_COSMOGRAPH='cosmos-observatory-next-view';
 export class CosmographView extends UpstreamView {
   private reactRoot:Root|undefined;private engineController:Coordinator|undefined;private productPlugin:ObservatoryPlugin;
-  constructor(leaf:WorkspaceLeaf,plugin:ObservatoryPlugin){super(leaf,plugin);this.productPlugin=plugin;}
+  constructor(leaf:WorkspaceLeaf,plugin:UpstreamPlugin){super(leaf,plugin);this.productPlugin=plugin as ObservatoryPlugin;}
   override getViewType(){return VIEW_TYPE_COSMOGRAPH;}
   override getDisplayText(){return '宇宙观测台';}
   override getIcon(){return 'orbit';}
