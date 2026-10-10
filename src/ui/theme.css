@@ -109,3 +109,16 @@
 .observatory-footer{height:auto;min-height:27px;gap:10px;max-height:80px;flex-wrap:wrap;padding:4px 16px;}.observatory-footer>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:30%;}.observatory-footer button{font-size:9px;height:20px;}.observatory-footer>div{min-width:0;flex-wrap:wrap;}.search-results [aria-selected=true]{background:#213249;}.replay-control{display:flex;flex-direction:column;gap:12px;font-size:12px;}.replay-control input{height:30px;}.replay-control [data-slot=select-trigger]{width:130px;}
 @container (max-width:210px){.reference-coverage{flex-direction:column;align-items:flex-start;gap:5px;}.world-map{grid-template-columns:1fr;}.coverage-ring{width:44px;height:44px;}.heat-world>span{width:32px;}}
 @media(max-width:700px){.observatory-header{padding:8px 10px;gap:5px;}.observatory-header .brand{min-width:0;font-size:10px;}.brand small{display:none;}.brand svg{display:none;}.reference-tabs{left:10px;gap:12px;}.scene-toolbar{left:10px!important;max-width:calc(100% - 20px);}.observatory-footer>span{max-width:45%;}.evidence-dialog{padding:14px!important;}.setting-number{width:100%;}.settings-fields fieldset{max-width:100%;}.world-selection{display:none;}}
+.cosmos-portal .evidence-dialog,.cosmos-portal .evidence-sheet,.cosmos-portal .settings-dialog{font-size:inherit;line-height:1.6;}
+.cosmos-portal .evidence-detail,.cosmos-portal .entity-browser,.cosmos-portal .replay-control{font-size:inherit;}
+.cosmos-portal [data-slot=dialog-title],.cosmos-portal [data-slot=sheet-title]{font-size:1.35em;line-height:1.45;}
+.cosmos-portal [data-slot=dialog-description],.cosmos-portal [data-slot=sheet-description]{font-size:.9em;line-height:1.6;}
+.cosmos-portal .setting-field,.cosmos-portal .settings-fields fieldset label,.cosmos-portal .settings-feedback{font-size:inherit;}
+.cosmos-portal .setting-field>input,.cosmos-portal .setting-number input,.cosmos-portal .world-setting input,.cosmos-portal .settings-fields textarea,.cosmos-portal .settings-groups button{font-size:.9em;}
+.cosmos-portal .setting-field>span{width:42%;min-width:0;overflow-wrap:anywhere;}
+.cosmos-portal .setting-number{min-width:0;}.cosmos-portal .setting-field input{min-width:0;max-width:100%;}
+.cosmos-portal .world-setting{min-width:0;}.cosmos-portal .world-setting label{min-width:0;}.cosmos-portal .vector-input input{width:33%;min-width:0;}
+.cosmos-portal [data-slot=tooltip-content]{max-width:min(280px,90vw);font-size:.9em;line-height:1.5;overflow-wrap:anywhere;}
+.file-row{min-width:0;display:flex;flex-direction:column;gap:4px;}.file-row>button{min-width:0;max-width:100%;justify-content:flex-start;white-space:normal;overflow-wrap:anywhere;height:auto;text-align:left;}
+.cosmos-portal button:focus-visible,.cosmos-root button:focus-visible{outline:2px solid #83eadb;outline-offset:2px;}
+@media(max-width:700px){.cosmos-portal .settings-dialog{padding:14px!important;}.cosmos-portal .setting-field{flex-wrap:wrap;gap:8px;}.cosmos-portal .setting-field>span{width:100%;}.cosmos-portal .setting-field>input{width:100%;}.cosmos-portal .world-setting{grid-template-columns:1fr;}.cosmos-portal .settings-groups{gap:3px;}.cosmos-portal .settings-groups button{white-space:normal;height:auto;min-height:28px;}.cosmos-portal .evidence-sheet{padding:14px;}}
