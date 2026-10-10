@@ -1,0 +1,11 @@
+node_modules/
+dist/
+main.js
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+.vite/
+.test-build/
+coverage/

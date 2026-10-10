@@ -1,0 +1,66 @@
+name: CosmoGraph upstream baseline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: upstream-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  baseline:
+    name: Upstream baseline (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: vendor/cosmograph
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install the upstream locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Run upstream vault adapter tests
+        run: npm test
+      - name: Type check and compile the original native plugin
+        run: npm run build:plugin
+      - name: Type check and compile the original web harness
+        if: runner.os == 'Linux'
+        run: npm run build:web
+      - name: Preserve baseline evidence
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: upstream-baseline-not-a-candidate
+          path: |
+            vendor/cosmograph/main.js
+            vendor/cosmograph/manifest.json
+            vendor/cosmograph/LICENSE
+          retention-days: 1
+          if-no-files-found: error
+
+  gate:
+    name: Upstream baseline gate
+    if: always()
+    needs: [baseline]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require every baseline matrix job
+        env:
+          BASELINE_RESULT: ${{ needs.baseline.result }}
+        run: |
+          test "$BASELINE_RESULT" = success
+          echo 'This gate verifies only the pinned upstream baseline, not the new plugin acceptance matrix.' >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,604 @@
+import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
+import cosmographStyles from "../style.css";
+import { SphericalGraph, type LabelMode, type SphereStyle } from "../graph/SphericalGraph";
+import { buildGraphLookup, type GraphLookup } from "../graph/lookup";
+import type { GraphData, GraphNode } from "../types";
+import { buildVaultGraph } from "./vaultGraph";
+import type CosmographPlugin from "./plugin";
+
+export const VIEW_TYPE_COSMOGRAPH = "cosmograph-3d-view";
+
+const PLUGIN_STYLES = `
+  :host { display: block; width: 100%; height: 100%; }
+  #app { width: 100%; height: 100%; }
+  .app-shell--obsidian {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    color-scheme: dark;
+    color: #e9edf4;
+    font-family: "Avenir Next", Avenir, "SF Pro Display", system-ui, sans-serif;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    --accent: #f08bd7;
+    --surface: rgba(7, 9, 16, 0.91);
+    --line: rgba(171, 184, 214, 0.12);
+    --muted: #858b99;
+    --radius: 14px;
+  }
+  .panel-open {
+    width: 100%;
+    min-height: 34px;
+    margin: 0 0 4px;
+    border: 1px solid rgba(216, 157, 196, 0.18);
+    border-radius: 9px;
+    background: rgba(185, 123, 160, 0.1);
+    color: #e5c8da;
+    cursor: pointer;
+    font-size: 9px;
+  }
+  .panel-open:hover { background: rgba(185, 123, 160, 0.18); color: #fff0f8; }
+  .panel-open[hidden] { display: none; }
+  .recent-block li { cursor: pointer; }
+  .recent-block li:focus-visible { outline: 1px solid rgba(240, 139, 215, 0.62); outline-offset: 1px; }
+  .empty-state {
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    padding: 32px;
+    color: #959cab;
+    text-align: center;
+    font-size: 12px;
+    pointer-events: none;
+  }
+  .empty-state[hidden] { display: none; }
+  .app-shell--obsidian .scene-settings { right: 22px; }
+  @media (max-width: 760px) {
+    .app-shell--obsidian .scene-settings { right: 14px; }
+  }
+`;
+
+function viewMarkup() {
+  return `
+    <main class="app-shell app-shell--obsidian">
+      <div class="scene-settings" id="scene-settings">
+        <button class="scene-settings__trigger" id="scene-settings-trigger" type="button" aria-label="Настройки сцены" aria-controls="scene-settings-menu" aria-expanded="false" title="Настройки сцены"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span></button>
+        <div class="scene-settings__menu" id="scene-settings-menu" role="dialog" aria-label="Настройки сцены" hidden>
+          <div class="scene-settings__heading">
+            <span>Настройки сцены</span>
+            <small>Управление</small>
+          </div>
+          <div class="scene-settings__row scene-settings__row--labels">
+            <span class="scene-settings__copy"><strong>Подписи узлов</strong><small>Какие названия показывать</small></span>
+            <div class="label-mode-switch" role="group" aria-label="Режим подписей узлов">
+              <button type="button" data-label-mode="none" aria-pressed="false">Нет</button>
+              <button type="button" data-label-mode="important" aria-pressed="true" class="is-active">Важные</button>
+              <button type="button" data-label-mode="all" aria-pressed="false">Все</button>
+            </div>
+          </div>
+          <div class="scene-settings__row scene-settings__row--clusters">
+            <span class="scene-settings__copy"><strong>Глубина кластеров</strong><small>Насколько дробить папки</small></span>
+            <div class="cluster-depth-switch" role="group" aria-label="Глубина папок для кластеров">
+              <button type="button" data-group-depth="1" aria-label="Один уровень папок" aria-pressed="true" class="is-active">1</button>
+              <button type="button" data-group-depth="2" aria-label="Два уровня папок" aria-pressed="false">2</button>
+              <button type="button" data-group-depth="3" aria-label="Три уровня папок" aria-pressed="false">3</button>
+            </div>
+          </div>
+          <div class="scene-settings__actions">
+            <button class="scene-menu-action" id="cosmic-background-toggle" type="button" aria-pressed="false">
+              <span><strong>Космический фон</strong><small>Туманности и дальние галактики</small></span>
+              <span class="scene-menu-action__value">Включить</span>
+            </button>
+            <button class="scene-menu-action" id="immersive-toggle" type="button" aria-pressed="false">
+              <span><strong>Сцена</strong><small id="immersive-state">Скрыть интерфейс</small></span>
+              <span class="scene-menu-action__value">Включить</span>
+            </button>
+            <button class="scene-menu-action" id="refresh-button" type="button">
+              <span><strong>Обновить</strong><small>Перестроить граф из vault</small></span>
+              <span class="scene-menu-action__value">Запустить</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <header class="topbar">
+        <div class="brand" aria-label="CosmoGraph">
+          <span class="brand-mark" aria-hidden="true"><span></span></span>
+          <span class="brand-copy"><strong>CosmoGraph</strong><small>ваш vault, как планета.</small></span>
+        </div>
+      </header>
+
+      <aside class="library-sidebar" aria-label="Разделы хранилища">
+        <nav id="group-list"></nav>
+        <label class="search-field">
+          <span class="sr-only">Поиск заметки</span>
+          <input id="search-input" type="search" placeholder="Поиск заметок" autocomplete="off" />
+          <span class="search-shortcut" aria-hidden="true">⌘F</span>
+        </label>
+      </aside>
+
+      <section class="viewport" aria-label="Трёхмерный граф заметок">
+        <canvas id="graph-canvas"></canvas>
+        <div class="node-tooltip" id="node-tooltip" role="tooltip" hidden></div>
+        <div class="empty-state" id="empty-state" hidden>В этом vault пока нет Markdown-заметок.</div>
+      </section>
+
+      <aside class="note-panel" id="note-panel" aria-live="polite" hidden>
+        <div class="panel-heading">
+          <span class="panel-swatch" aria-hidden="true"></span>
+          <p class="panel-group" id="panel-group"></p>
+          <button class="panel-close" id="panel-close" type="button" aria-label="Закрыть">Закрыть</button>
+        </div>
+        <h1 id="panel-title"></h1>
+        <p class="panel-path" id="panel-path"></p>
+        <p class="panel-preview" id="panel-preview" hidden></p>
+        <button class="panel-open" id="panel-open" type="button">Открыть заметку</button>
+        <div class="focus-controls" id="focus-controls">
+          <span class="focus-controls__copy"><strong>Окружение</strong><small id="focus-summary">Ближайшие связи заметки</small></span>
+          <div class="focus-depth-switch" role="group" aria-label="Глубина связей в фокусе">
+            <button type="button" data-focus-depth="1" aria-label="Один шаг связей" aria-pressed="true" class="is-active">1</button>
+            <button type="button" data-focus-depth="2" aria-label="Два шага связей" aria-pressed="false">2</button>
+            <button type="button" data-focus-depth="3" aria-label="Три шага связей" aria-pressed="false">3</button>
+          </div>
+        </div>
+        <dl class="panel-meta">
+          <div><dt id="metric-label-a">Входящие связи</dt><dd id="metric-value-a">0</dd></div>
+          <div><dt id="metric-label-b">Исходящие связи</dt><dd id="metric-value-b">0</dd></div>
+        </dl>
+        <div class="recent-block">
+          <p>Связанные заметки</p>
+          <ul id="recent-notes"></ul>
+        </div>
+      </aside>
+
+      <footer class="view-dock" aria-label="Режим отображения">
+        <div class="sphere-style-switch" role="group" aria-label="Стиль сферы">
+          <button type="button" data-sphere-style="calm" aria-pressed="false">Мягкая</button>
+          <button type="button" data-sphere-style="radiant" aria-pressed="true">Сияние</button>
+        </div>
+        <button type="button" id="focus-button" aria-pressed="false">Фокус</button>
+        <span id="dock-status">Загрузка</span>
+      </footer>
+
+      <div class="loading-state" id="loading-state" hidden>
+        <div class="loading-orbit" aria-hidden="true"></div>
+        <p>Строим карту связей</p>
+      </div>
+    </main>
+  `;
+}
+
+export class CosmographView extends ItemView {
+  private graph: SphericalGraph | null = null;
+  private shadow: ShadowRoot | null = null;
+  private shell: HTMLElement | null = null;
+  private currentGraph: GraphData = { nodes: [], edges: [] };
+  private currentLookup: GraphLookup = buildGraphLookup(this.currentGraph);
+  private currentNode: GraphNode | null = null;
+  private refreshTimer: number | null = null;
+  private isImmersive = false;
+  private isFocusMode = false;
+  private currentFocusDepth = 1;
+
+  constructor(leaf: WorkspaceLeaf, private readonly plugin: CosmographPlugin) {
+    super(leaf);
+  }
+
+  getViewType() {
+    return VIEW_TYPE_COSMOGRAPH;
+  }
+
+  getDisplayText() {
+    return "CosmoGraph 3D";
+  }
+
+  getIcon() {
+    return "orbit";
+  }
+
+  async onOpen() {
+    this.contentEl.empty();
+    this.contentEl.addClass("cosmograph-content");
+
+    const host = this.contentEl.createDiv({ cls: "cosmograph-host" });
+    this.shadow = host.attachShadow({ mode: "open" });
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(`${cosmographStyles}\n${PLUGIN_STYLES}`);
+    this.shadow.adoptedStyleSheets = [sheet];
+    const mount = createDiv();
+    mount.id = "app";
+    const parsedMarkup = new DOMParser().parseFromString(viewMarkup(), "text/html");
+    const shell = parsedMarkup.body.firstElementChild;
+    if (!shell) throw new Error("CosmoGraph UI markup could not be created.");
+    mount.append(shell);
+    this.shadow.append(mount);
+    this.shell = this.find<HTMLElement>(".app-shell");
+
+    const canvas = this.find<HTMLCanvasElement>("#graph-canvas");
+    try {
+      this.graph = new SphericalGraph(canvas);
+    } catch (error) {
+      this.find<HTMLElement>("#empty-state").textContent = error instanceof Error
+        ? `Не удалось запустить WebGL: ${error.message}`
+        : "Не удалось запустить WebGL.";
+      this.find<HTMLElement>("#empty-state").hidden = false;
+      return;
+    }
+
+    this.bindInterface();
+    this.graph.setHandlers((node) => this.showNode(node), (node, x, y) => this.showTooltip(node, x, y));
+    this.applySettings();
+    this.refreshGraph();
+
+    this.registerEvent(this.app.vault.on("create", () => this.scheduleRefresh()));
+    this.registerEvent(this.app.vault.on("delete", () => this.scheduleRefresh()));
+    this.registerEvent(this.app.vault.on("rename", () => this.scheduleRefresh()));
+    this.registerEvent(this.app.metadataCache.on("resolved", () => this.scheduleRefresh()));
+    this.registerEvent(this.app.metadataCache.on("changed", () => this.scheduleRefresh()));
+  }
+
+  async onClose() {
+    if (this.refreshTimer !== null) window.clearTimeout(this.refreshTimer);
+    this.graph?.destroy();
+    this.graph = null;
+    this.shadow = null;
+    this.shell = null;
+    this.contentEl.removeClass("cosmograph-content");
+    this.contentEl.empty();
+  }
+
+  applySettings() {
+    this.setSphereStyle(this.plugin.preferences.sphereStyle, false);
+    this.setCosmicBackground(this.plugin.preferences.cosmicBackground, false);
+    this.setLabelMode(this.plugin.preferences.labelMode, false);
+    this.setGroupDepth(this.plugin.preferences.groupDepth, false);
+  }
+
+  refreshGraph() {
+    if (!this.graph) return;
+    const loadingState = this.find<HTMLElement>("#loading-state");
+    loadingState.hidden = false;
+    window.requestAnimationFrame(() => {
+      try {
+        if (this.isFocusMode) this.setFocusMode(false);
+        this.currentGraph = buildVaultGraph(this.app, this.plugin.preferences.groupDepth);
+        this.currentLookup = buildGraphLookup(this.currentGraph);
+        this.graph?.setData(this.currentGraph);
+        this.renderGroupList();
+        const status = `${this.currentGraph.nodes.length} заметок · ${this.currentGraph.edges.length} связей`;
+        this.find<HTMLElement>("#dock-status").textContent = status;
+        this.find<HTMLElement>("#empty-state").hidden = this.currentGraph.nodes.length > 0;
+        this.showNode(this.graph?.getPrimaryNode() ?? null);
+      } finally {
+        loadingState.hidden = true;
+      }
+    });
+  }
+
+  private scheduleRefresh() {
+    if (!this.plugin.preferences.refreshAutomatically) return;
+    if (this.refreshTimer !== null) window.clearTimeout(this.refreshTimer);
+    this.refreshTimer = window.setTimeout(() => {
+      this.refreshTimer = null;
+      this.refreshGraph();
+    }, 450);
+  }
+
+  private bindInterface() {
+    const searchInput = this.find<HTMLInputElement>("#search-input");
+    const immersiveToggle = this.find<HTMLButtonElement>("#immersive-toggle");
+    const cosmicBackgroundToggle = this.find<HTMLButtonElement>("#cosmic-background-toggle");
+    const sceneSettings = this.find<HTMLElement>("#scene-settings");
+    const sceneSettingsTrigger = this.find<HTMLButtonElement>("#scene-settings-trigger");
+    const sceneSettingsMenu = this.find<HTMLElement>("#scene-settings-menu");
+    const labelModeButtons = this.findAll<HTMLButtonElement>("[data-label-mode]");
+    const groupDepthButtons = this.findAll<HTMLButtonElement>("[data-group-depth]");
+    const focusDepthButtons = this.findAll<HTMLButtonElement>("[data-focus-depth]");
+    const sphereStyleButtons = this.findAll<HTMLButtonElement>("[data-sphere-style]");
+
+    searchInput.addEventListener("input", () => this.graph?.setSearch(searchInput.value));
+    this.find<HTMLButtonElement>("#panel-close").addEventListener("click", () => this.showNode(null));
+    this.find<HTMLButtonElement>("#panel-open").addEventListener("click", () => void this.openCurrentNote());
+    this.find<HTMLButtonElement>("#refresh-button").addEventListener("click", () => {
+      this.setSettingsOpen(false);
+      this.refreshGraph();
+    });
+    this.find<HTMLButtonElement>("#focus-button").addEventListener("click", () => {
+      const target = this.currentNode ?? this.graph?.getPrimaryNode();
+      if (target) this.setFocusMode(!this.isFocusMode, target);
+    });
+    focusDepthButtons.forEach((button) => button.addEventListener("click", () => {
+      this.setFocusDepth(Number(button.dataset.focusDepth));
+      if (!this.isFocusMode && this.currentNode) this.setFocusMode(true, this.currentNode);
+    }));
+    immersiveToggle.addEventListener("click", () => this.setImmersive(!this.isImmersive));
+    cosmicBackgroundToggle.addEventListener("click", () => {
+      this.setCosmicBackground(cosmicBackgroundToggle.getAttribute("aria-pressed") !== "true", true);
+    });
+    sceneSettingsTrigger.addEventListener("click", () => this.setSettingsOpen(sceneSettingsMenu.hidden));
+    labelModeButtons.forEach((button) => button.addEventListener("click", () => {
+      this.setLabelMode(button.dataset.labelMode as LabelMode, true);
+    }));
+    groupDepthButtons.forEach((button) => button.addEventListener("click", () => {
+      this.setGroupDepth(Number(button.dataset.groupDepth), true);
+    }));
+    this.shadow?.addEventListener("pointerdown", (event) => {
+      if (!sceneSettingsMenu.hidden && event.target instanceof Node && !sceneSettings.contains(event.target)) {
+        this.setSettingsOpen(false);
+      }
+    });
+    sphereStyleButtons.forEach((button) => button.addEventListener("click", () => {
+      this.setSphereStyle(button.dataset.sphereStyle as SphereStyle, true);
+    }));
+    this.shadow?.addEventListener("keydown", (event) => {
+      const keyboardEvent = event as KeyboardEvent;
+      if (keyboardEvent.key === "Escape") {
+        if (!sceneSettingsMenu.hidden) {
+          this.setSettingsOpen(false);
+          sceneSettingsTrigger.focus();
+        } else if (this.isFocusMode) {
+          this.setFocusMode(false);
+        } else if (this.isImmersive) {
+          this.setImmersive(false);
+        }
+      }
+      if ((keyboardEvent.metaKey || keyboardEvent.ctrlKey) && keyboardEvent.key.toLowerCase() === "f") {
+        keyboardEvent.preventDefault();
+        searchInput.focus();
+      }
+    });
+  }
+
+  private renderGroupList() {
+    const groupList = this.find<HTMLElement>("#group-list");
+    const searchInput = this.find<HTMLInputElement>("#search-input");
+    const counts = new Map<string, number>();
+    this.currentGraph.nodes.forEach((node) => counts.set(node.group, (counts.get(node.group) ?? 0) + 1));
+    groupList.replaceChildren();
+    const items: Array<[string, string, number]> = [["Все заметки", "", this.currentGraph.nodes.length]];
+    [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 7).forEach(([group, count]) => {
+      items.push([group, group, count]);
+    });
+
+    items.forEach(([label, search, count], index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      if (index === 0) button.classList.add("is-active");
+      const name = document.createElement("span");
+      name.textContent = label;
+      const amount = document.createElement("small");
+      amount.textContent = String(count);
+      button.append(name, amount);
+      button.addEventListener("click", () => {
+        groupList.querySelectorAll("button").forEach((candidate) => candidate.classList.toggle("is-active", candidate === button));
+        searchInput.value = search;
+        this.graph?.setSearch(search);
+      });
+      groupList.appendChild(button);
+    });
+  }
+
+  private linkedNotes(node: GraphNode) {
+    if (node.kind === "cluster") return (this.currentLookup.nodesByGroup.get(node.group) ?? []).slice(0, 3);
+    return [...(this.currentLookup.adjacency.get(node.id) ?? [])]
+      .map((id) => this.currentLookup.nodesById.get(id))
+      .filter((candidate): candidate is GraphNode => Boolean(candidate))
+      .slice(0, 3);
+  }
+
+  private showNode(node: GraphNode | null, focusCamera = false) {
+    this.currentNode = node;
+    const notePanel = this.find<HTMLElement>("#note-panel");
+    if (!node) {
+      if (this.isFocusMode) this.setFocusMode(false);
+      notePanel.hidden = true;
+      return;
+    }
+
+    this.find<HTMLElement>("#panel-title").textContent = node.title;
+    this.find<HTMLElement>("#panel-path").textContent = node.path;
+    this.find<HTMLElement>("#panel-group").textContent = node.kind === "cluster" ? "Кластер" : node.group;
+    this.find<HTMLButtonElement>("#panel-open").hidden = node.kind === "cluster";
+    void this.updateNodePreview(node);
+
+    if (node.kind === "cluster") {
+      this.find<HTMLElement>("#metric-label-a").textContent = "Заметок";
+      this.find<HTMLElement>("#metric-value-a").textContent = String(node.noteCount ?? 0);
+      this.find<HTMLElement>("#metric-label-b").textContent = "Связей";
+      this.find<HTMLElement>("#metric-value-b").textContent = String(this.currentLookup.incidentEdgesByGroup.get(node.group) ?? 0);
+    } else {
+      this.find<HTMLElement>("#metric-label-a").textContent = "Входящие связи";
+      this.find<HTMLElement>("#metric-value-a").textContent = String(this.currentLookup.incomingCounts.get(node.id) ?? 0);
+      this.find<HTMLElement>("#metric-label-b").textContent = "Исходящие связи";
+      this.find<HTMLElement>("#metric-value-b").textContent = String(this.currentLookup.outgoingCounts.get(node.id) ?? 0);
+    }
+
+    const recentNotes = this.find<HTMLUListElement>("#recent-notes");
+    recentNotes.replaceChildren(...this.linkedNotes(node).map((linkedNode) => {
+      const item = document.createElement("li");
+      item.textContent = linkedNode.title;
+      item.title = "Показать на сфере";
+      item.tabIndex = 0;
+      item.addEventListener("click", () => this.showNode(linkedNode, true));
+      item.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") this.showNode(linkedNode, true);
+      });
+      return item;
+    }));
+    notePanel.hidden = false;
+    if (this.isFocusMode) this.setFocusMode(true, node);
+    else if (focusCamera) this.graph?.focusNode(node.id);
+  }
+
+  private setFocusDepth(depth: number) {
+    this.currentFocusDepth = Math.min(3, Math.max(1, Math.trunc(depth) || 1));
+    this.findAll<HTMLButtonElement>("[data-focus-depth]").forEach((button) => {
+      const active = Number(button.dataset.focusDepth) === this.currentFocusDepth;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+    if (this.isFocusMode && this.currentNode) this.setFocusMode(true, this.currentNode);
+  }
+
+  private setFocusMode(active: boolean, node: GraphNode | null = this.currentNode) {
+    const button = this.find<HTMLButtonElement>("#focus-button");
+    const summary = this.find<HTMLElement>("#focus-summary");
+    if (!active || !node) {
+      this.isFocusMode = false;
+      this.graph?.clearFocus();
+      this.shell?.classList.remove("is-focus-mode");
+      button.classList.remove("is-active");
+      button.setAttribute("aria-pressed", "false");
+      button.textContent = "Фокус";
+      summary.textContent = "Ближайшие связи заметки";
+      return;
+    }
+
+    this.isFocusMode = true;
+    const noteCount = this.graph?.setFocus(node.id, this.currentFocusDepth) ?? 0;
+    this.shell?.classList.add("is-focus-mode");
+    button.classList.add("is-active");
+    button.setAttribute("aria-pressed", "true");
+    button.textContent = "Выйти";
+    summary.textContent = `${noteCount} ${noteCount === 1 ? "заметка" : noteCount < 5 ? "заметки" : "заметок"} в фокусе`;
+  }
+
+  private async updateNodePreview(node: GraphNode) {
+    const preview = this.find<HTMLElement>("#panel-preview");
+    if (node.kind === "cluster") {
+      preview.hidden = true;
+      preview.textContent = "";
+      return;
+    }
+    const file = this.app.vault.getAbstractFileByPath(node.path);
+    if (!(file instanceof TFile)) {
+      preview.hidden = true;
+      return;
+    }
+    const content = await this.app.vault.cachedRead(file);
+    if (this.currentNode?.id !== node.id) return;
+    const plain = content
+      .replace(/^---\s*[\s\S]*?\n---\s*/u, "")
+      .replace(/```[\s\S]*?```/gu, "")
+      .replace(/!?(?:\[([^\]]*)\]\([^)]*\)|\[\[([^\]|]*)(?:\|([^\]]*))?\]\])/gu, "$1$3$2")
+      .replace(/^[#>*+-]+\s*/gmu, "")
+      .replace(/[*_~`]/gu, "")
+      .replace(/\s+/gu, " ")
+      .trim();
+    preview.textContent = plain.length > 190 ? `${plain.slice(0, 187).trimEnd()}...` : plain;
+    preview.hidden = plain.length === 0;
+  }
+
+  private showTooltip(node: GraphNode | null, x: number, y: number) {
+    const tooltip = this.find<HTMLElement>("#node-tooltip");
+    if (!node || this.isImmersive) {
+      tooltip.hidden = true;
+      return;
+    }
+    tooltip.textContent = node.title;
+    tooltip.style.transform = `translate3d(${x + 14}px, ${y + 14}px, 0)`;
+    tooltip.hidden = false;
+  }
+
+  private async openCurrentNote() {
+    if (this.currentNode) await this.openNote(this.currentNode);
+  }
+
+  private async openNote(node: GraphNode) {
+    if (node.kind === "cluster") return;
+    const file = this.app.vault.getAbstractFileByPath(node.path);
+    if (!(file instanceof TFile)) return;
+    const leaf = this.app.workspace.getLeaf(this.plugin.preferences.openNotesInNewTab ? "tab" : false);
+    await leaf.openFile(file);
+  }
+
+  private setSphereStyle(style: SphereStyle, persist: boolean) {
+    this.graph?.setSphereStyle(style);
+    if (this.shell) this.shell.dataset.sphereStyle = style;
+    this.findAll<HTMLButtonElement>("[data-sphere-style]").forEach((button) => {
+      const active = button.dataset.sphereStyle === style;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+    if (persist) {
+      this.plugin.preferences.sphereStyle = style;
+      void this.plugin.saveSettings();
+    }
+  }
+
+  private setCosmicBackground(enabled: boolean, persist: boolean) {
+    this.graph?.setCosmicBackground(enabled);
+    const button = this.find<HTMLButtonElement>("#cosmic-background-toggle");
+    button.classList.toggle("is-active", enabled);
+    button.setAttribute("aria-pressed", String(enabled));
+    button.querySelector<HTMLElement>(".scene-menu-action__value")!.textContent = enabled ? "Выключить" : "Включить";
+    if (persist) {
+      this.plugin.preferences.cosmicBackground = enabled;
+      void this.plugin.saveSettings();
+    }
+  }
+
+  private setSettingsOpen(open: boolean) {
+    const menu = this.find<HTMLElement>("#scene-settings-menu");
+    const trigger = this.find<HTMLButtonElement>("#scene-settings-trigger");
+    menu.hidden = !open;
+    trigger.classList.toggle("is-active", open);
+    trigger.setAttribute("aria-expanded", String(open));
+  }
+
+  private setLabelMode(mode: LabelMode, persist: boolean) {
+    this.graph?.setLabelMode(mode);
+    this.findAll<HTMLButtonElement>("[data-label-mode]").forEach((button) => {
+      const active = button.dataset.labelMode === mode;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+    if (persist) {
+      this.plugin.preferences.labelMode = mode;
+      void this.plugin.saveSettings();
+    }
+  }
+
+  private setGroupDepth(depth: number, persist: boolean) {
+    const normalizedDepth = Math.min(3, Math.max(1, Math.trunc(depth) || 1));
+    this.findAll<HTMLButtonElement>("[data-group-depth]").forEach((button) => {
+      const active = Number(button.dataset.groupDepth) === normalizedDepth;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+    if (persist && this.plugin.preferences.groupDepth !== normalizedDepth) {
+      this.plugin.preferences.groupDepth = normalizedDepth;
+      void this.plugin.saveSettings();
+      this.refreshGraph();
+    }
+  }
+
+  private setImmersive(next: boolean) {
+    this.isImmersive = next;
+    this.shell?.classList.toggle("is-immersive", next);
+    const button = this.find<HTMLButtonElement>("#immersive-toggle");
+    const state = this.find<HTMLElement>("#immersive-state");
+    button.setAttribute("aria-pressed", String(next));
+    button.classList.toggle("is-active", next);
+    button.setAttribute("aria-label", next ? "Показать интерфейс" : "Скрыть интерфейс");
+    button.title = next ? "Показать интерфейс" : "Скрыть интерфейс";
+    state.textContent = next ? "Показать интерфейс" : "Скрыть интерфейс";
+    button.querySelector<HTMLElement>(".scene-menu-action__value")!.textContent = next ? "Выключить" : "Включить";
+    if (next) {
+      this.find<HTMLElement>("#node-tooltip").hidden = true;
+      this.setSettingsOpen(false);
+    }
+  }
+
+  private find<T extends Element>(selector: string) {
+    const element = this.shadow?.querySelector<T>(selector);
+    if (!element) throw new Error(`CosmoGraph UI element is missing: ${selector}`);
+    return element;
+  }
+
+  private findAll<T extends Element>(selector: string) {
+    return [...(this.shadow?.querySelectorAll<T>(selector) ?? [])];
+  }
+}

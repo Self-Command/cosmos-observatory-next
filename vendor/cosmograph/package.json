@@ -1,0 +1,49 @@
+{
+  "name": "obsidian-cosmograph",
+  "private": true,
+  "version": "0.3.0",
+  "description": "Immersive 3D spherical knowledge graph for Obsidian vaults.",
+  "license": "MIT",
+  "author": "n1ghtmare-dev",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/n1ghtmare-dev/obsidian-cosmograph.git"
+  },
+  "homepage": "https://github.com/n1ghtmare-dev/obsidian-cosmograph#readme",
+  "keywords": [
+    "obsidian",
+    "obsidian-plugin",
+    "knowledge-graph",
+    "3d-visualization",
+    "graph-view",
+    "threejs",
+    "markdown",
+    "pkm",
+    "second-brain"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:web": "vite",
+    "dev:plugin": "node esbuild.config.mjs",
+    "build": "npm run build:web && npm run build:plugin",
+    "build:web": "tsc -p tsconfig.json && vite build",
+    "build:plugin": "tsc -p tsconfig.plugin.json && node esbuild.config.mjs production",
+    "test": "esbuild tests/vaultGraph.test.ts --bundle --platform=node --format=esm --outfile=.test-build/vaultGraph.test.mjs && node --test .test-build/vaultGraph.test.mjs",
+    "lint": "eslint src manifest.json",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.179.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/three": "^0.179.0",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-obsidianmd": "^0.4.2",
+    "obsidian": "latest",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.3"
+  }
+}

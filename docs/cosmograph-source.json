@@ -1,0 +1,132 @@
+{
+  "repository": "https://github.com/n1ghtmare-dev/obsidian-cosmograph",
+  "commit": "c455f466f7df9c23724ba291aa9f2463ca553aaa",
+  "license": "MIT",
+  "usage": "Full upstream native plugin and spherical rendering base; customization not yet applied",
+  "files": [
+    {
+      "path": ".gitignore",
+      "sha256": "2b9f263be943349cd3d77c808766b5c6438936d1095d43113a753663625ae6c4"
+    },
+    {
+      "path": "docs/assets/cosmograph-hero.jpg",
+      "sha256": "1945f6ddeaa558b447f3b6ed91c53cbdad287ad173a1511f31bb3d4155064226"
+    },
+    {
+      "path": "docs/assets/cosmograph-readme-hero-v2.jpg",
+      "sha256": "ab93ac6cb97a550a1d39089c624cc21af128149248ae93e7c4cfac0f739950d9"
+    },
+    {
+      "path": "docs/assets/cosmograph-readme-hero-v3.jpg",
+      "sha256": "b17707288bf73f119018932300737e403209aece064cf0f6832fa54a900561ee"
+    },
+    {
+      "path": "esbuild.config.mjs",
+      "sha256": "2d6ac7c910bf6b004beacf65dec96266526a50d39b716554c5427426ecf24018"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "sha256": "29514e910ed94c623f241a40d3aa711b2aaa66becd10560a0592c35a32ac098b"
+    },
+    {
+      "path": "index.html",
+      "sha256": "e21eed0c606bfd1e062819fb5a98062fe9aef468b8b4e75446fdbe19789044a4"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "ee6f9347e60746861cdfcce7e2e3b4265c4b77cb6fb08e95b8b644b3a480e76f"
+    },
+    {
+      "path": "manifest.json",
+      "sha256": "f387970779833177ffaa703ad0cd318764b4af96ce67ad0ac2211f919bcad5d2"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "18f37d226c68b14d5c8e603835944c31bf81bea68adf9139e4625f28e1458143"
+    },
+    {
+      "path": "package.json",
+      "sha256": "bfd299bc2b83d911a1101cc87b716ad747466deaa9749888e56ad5add8cd29a3"
+    },
+    {
+      "path": "README.md",
+      "sha256": "27ffae3f9ee95ff752e13b9b3ab2e9d46980feed813fe169fe1171442622aee9"
+    },
+    {
+      "path": "src/css.d.ts",
+      "sha256": "ed40c186ec554494b80630ad8870fce60d5eeea16c30c00e6dd59846d78b8701"
+    },
+    {
+      "path": "src/data/sample.ts",
+      "sha256": "622c6d218bb0c9d759ebea7e04c6c0ae436410226d2db8c767c2628fb79ab1e5"
+    },
+    {
+      "path": "src/graph/focus.ts",
+      "sha256": "a94a1dc0aaf725683ccbe4944b9507fca9344ba459b2e724ff3c4b0dee72f388"
+    },
+    {
+      "path": "src/graph/lookup.ts",
+      "sha256": "0cf5142b8a970cdfaf2ad5f84fd7dc5d19ddee55a534e19bb35380365cb29fb4"
+    },
+    {
+      "path": "src/graph/performance.ts",
+      "sha256": "df4b7aeda6bddfcbbbf6d19be7e4fcd6fbc27fdde7663c78be5378b7221a27f5"
+    },
+    {
+      "path": "src/graph/SphericalGraph.ts",
+      "sha256": "c6856779f46ef4b848532eeda0e4a4a74805712b76b6ec656c55167c4ec0d527"
+    },
+    {
+      "path": "src/main.ts",
+      "sha256": "c502a1862ba963d64266d3acf0320549f0a1fe3ef361e1441cdfd804e0a148ab"
+    },
+    {
+      "path": "src/obsidian/CosmographView.ts",
+      "sha256": "ec6285d6fe8b620a826606647052e3889b8755c35d83bb47579100867019adc7"
+    },
+    {
+      "path": "src/obsidian/plugin.ts",
+      "sha256": "2cc08c73e096ecbb022037b2ca51ba1e80700ba94e64a1a72d1136be45df28c9"
+    },
+    {
+      "path": "src/obsidian/settings.ts",
+      "sha256": "69526ea4bcab25a38787258424c4f58b476d54dd16e7bf65e335fdd04a0fd10c"
+    },
+    {
+      "path": "src/obsidian/vaultGraph.ts",
+      "sha256": "fdfba81a7de532910fc0adb480400c464615c3b5ee2a819b2531697aa0e8e08b"
+    },
+    {
+      "path": "src/style.css",
+      "sha256": "6a55a615df5be28029bbfbfdf0dfb52be9273614c729d65cfd6770fc4b68bb34"
+    },
+    {
+      "path": "src/types.ts",
+      "sha256": "a1d45bc23a6220ebfd6928a708350462755371ef3e8188bac2980ec4254965a3"
+    },
+    {
+      "path": "src/vault.ts",
+      "sha256": "0dd7733e6b3168bde0b526e941bfb811e31ddb013c396b6d9dab0d0be6b15397"
+    },
+    {
+      "path": "styles.css",
+      "sha256": "5f7d185f9f7db2d6ead180430f36d4f9fa6806e483c4456383b71992c1dfc9d1"
+    },
+    {
+      "path": "tests/vaultGraph.test.ts",
+      "sha256": "2a853ddec9db2372e351ad46f56f47398b49481c0e259c3a1bdc2dea435f57b8"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "8ff724831c2a66b96eb65d28f94c0ab816def830e87ed2a8e83224fe652cbd26"
+    },
+    {
+      "path": "tsconfig.plugin.json",
+      "sha256": "d56e2e5c273c7b14e793e112cd0ce3e2231db9d6cd1e6b126df55445a1ce7cf8"
+    },
+    {
+      "path": "versions.json",
+      "sha256": "abb42b77568ca6957aff696e4bdd1485f2712d2397fdcc40846f45ebf99a1f6c"
+    }
+  ]
+}
