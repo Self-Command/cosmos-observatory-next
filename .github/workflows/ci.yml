@@ -49,6 +49,10 @@ jobs:
       - run: node scripts/verify-build.mjs
       - run: npx playwright install --with-deps chromium
       - run: npm run browser
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+        if: always()
+      - run: node scripts/video-evidence.mjs
+        if: always()
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with: {name: browser-evidence, path: test-results/, retention-days: 2}
@@ -107,6 +111,12 @@ jobs:
         with:
           name: mouse-panels-video
           path: 'test-results/**/operations-*/video.webm'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: mouse-video-review
+          path: 'test-results/video-review/'
           retention-days: 2
   host:
     needs: quality-build
