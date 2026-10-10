@@ -52,6 +52,62 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with: {name: browser-evidence, path: test-results/, retention-days: 2}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: browser-visual-layout
+          path: |
+            test-results/**/*dashboard.png
+            test-results/**/panel-*-maximized.png
+            test-results/**/world-xyz-mouse-controls.png
+            test-results/**/file-mouse-actions.png
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: browser-visual-entries
+          path: |
+            test-results/**/*entry-*.png
+            test-results/**/*file-sheet.png
+            test-results/**/*search.png
+            test-results/**/*select.png
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: browser-visual-settings
+          path: 'test-results/**/*settings-*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: browser-visual-evidence
+          path: |
+            test-results/**/events-full.png
+            test-results/**/event-evidence.png
+            test-results/**/coverage-*.png
+            test-results/**/heat-cell-events.png
+            test-results/**/*panel-menu.png
+            test-results/**/panel-tooltip.png
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: browser-metrics
+          path: 'test-results/**/*.json'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: mouse-graph-videos
+          path: 'test-results/**/graph-interactions-*/video.webm'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: mouse-panels-video
+          path: 'test-results/**/operations-*/video.webm'
+          retention-days: 2
   host:
     needs: quality-build
     timeout-minutes: 30
