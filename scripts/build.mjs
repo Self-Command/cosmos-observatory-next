@@ -8,11 +8,19 @@ import { createHash } from 'node:crypto';
 await mkdir('dist/plugin/assets',{recursive:true});await mkdir('dist/harness',{recursive:true});
 const cssText=await readFile('src/ui/theme.css','utf8');const compiled=await postcss([tailwind()]).process(cssText,{from:'src/ui/theme.css'});
 const cssPlugin={name:'compiled-isolated-theme',setup(build){build.onLoad({filter:/theme\.css$/},()=>({contents:`export default ${JSON.stringify(compiled.css)}`,loader:'js'}));}};
+// Radix focus utilities use document.activeElement, which resolves to the host in an
+// open ShadowRoot. Keep the upstream components and adapt their DOM boundary only.
+const shadowFocusPlugin={name:'radix-shadow-focus',setup(builder){builder.onLoad({filter:/[\\/]@radix-ui[\\/]react-[^\\/]+[\\/]dist[\\/].*\.[mc]?js$/},async args=>{
+  let source=await readFile(args.path,'utf8');if(!source.includes('.activeElement')&&!args.path.includes('react-focus-scope'))return;
+  source=source.replace(/\b(document|ownerDocument)\.activeElement\b/g,'cosmosDeepActiveElement($1)');
+  if(args.path.includes('react-focus-scope'))source=source.replace(/event\.target\b/g,'(event.composedPath()[0] ?? event.target)');
+  return {contents:`function cosmosDeepActiveElement(root){let active=root.activeElement;while(active?.shadowRoot?.activeElement)active=active.shadowRoot.activeElement;return active;}\n${source}`,loader:'js'};
+});}};
 const physics=await build({entryPoints:['src/physics/physics.worker.ts'],bundle:true,platform:'browser',format:'iife',target:'es2022',write:false,minify:true,legalComments:'eof'});
 const workerPlugin={name:'bundled-physics-worker',setup(builder){builder.onResolve({filter:/\?worker$/},args=>({path:args.path,namespace:'physics-worker'}));builder.onLoad({filter:/.*/,namespace:'physics-worker'},()=>({contents:`export default ${JSON.stringify(physics.outputFiles[0].text)}`,loader:'js'}));}};
-await build({entryPoints:['src/main.ts'],outfile:'dist/plugin/main.js',bundle:true,platform:'node',format:'cjs',target:'es2022',external:['obsidian','electron',...builtinModules,...builtinModules.map(name=>'node:'+name)],plugins:[cssPlugin,workerPlugin],loader:{'.css':'text','.svg':'text'},minify:true,legalComments:'eof'});
+await build({entryPoints:['src/main.ts'],outfile:'dist/plugin/main.js',bundle:true,platform:'node',format:'cjs',target:'es2022',external:['obsidian','electron',...builtinModules,...builtinModules.map(name=>'node:'+name)],plugins:[cssPlugin,workerPlugin,shadowFocusPlugin],loader:{'.css':'text','.svg':'text'},minify:true,legalComments:'eof'});
 await build({entryPoints:['src/events/bridge.ts'],outfile:'dist/plugin/bridge.mjs',bundle:true,platform:'node',format:'esm',target:'es2022',external:[...builtinModules,...builtinModules.map(name=>'node:'+name)],minify:true,legalComments:'eof'});
-await build({entryPoints:['tests/harness/main.tsx'],outfile:'dist/harness/main.js',bundle:true,platform:'browser',format:'esm',target:'es2022',plugins:[cssPlugin,workerPlugin],loader:{'.svg':'text'},minify:true,legalComments:'eof'});
+await build({entryPoints:['tests/harness/main.tsx'],outfile:'dist/harness/main.js',bundle:true,platform:'browser',format:'esm',target:'es2022',plugins:[cssPlugin,workerPlugin,shadowFocusPlugin],loader:{'.svg':'text'},minify:true,legalComments:'eof'});
 for(const file of ['manifest.json','styles.css'])await cp(file,`dist/plugin/${file}`);
 await cp('assets/spider.glb','dist/plugin/assets/spider.glb');await cp('assets/spider.glb','dist/harness/spider.glb');
 await cp('tests/harness/index.html','dist/harness/index.html');await cp('vendor/cosmograph/LICENSE','dist/plugin/COSMOGRAPH-LICENSE');await cp('src/ui/official/LICENSE.md','dist/plugin/SHADCN-LICENSE.md');

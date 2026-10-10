@@ -7,6 +7,9 @@ test('Isolate render scheduling, backing buffers and raw WebGL presentation',asy
     const shadow=document.querySelector('#app')!.shadowRoot!,canvas=shadow.querySelector('canvas')!,scene=(canvas as any).__cosmosScene,gl=canvas.getContext('webgl2')!;
     const sample=(name:string,raw=false)=>new Promise<any>(resolve=>{const start=performance.now(),initial=scene.debug().frames;let frames=0;const next=()=>{if(raw){gl.clearColor(.02,.03,.04,1);gl.clear(gl.COLOR_BUFFER_BIT);}frames++;if(performance.now()-start>=4000){const elapsed=(performance.now()-start)/1000,debug=scene.debug();resolve({name,rafFps:frames/elapsed,renderFps:(debug.frames-initial)/elapsed,buffer:{width:canvas.width,height:canvas.height,glWidth:gl.drawingBufferWidth,glHeight:gl.drawingBufferHeight},rect:canvas.getBoundingClientRect().toJSON(),context:gl.getContextAttributes(),drawCalls:debug.drawCalls,triangles:debug.triangles});}else requestAnimationFrame(next);};requestAnimationFrame(next);});
     const records=[await sample('product-default')];
+    scene.labelRenderer.render=()=>{};records.push(await sample('without-css-label-render'));
+    scene.updateInstances=()=>{};records.push(await sample('without-instance-updates'));
+    scene.callbacks.positions=()=>{};records.push(await sample('without-position-recording'));
     (window as any).fixture.destroy();scene.physics.pause(true,25);records.push(await sample('without-coordinator-and-physics'));
     for(const object of scene.scene.children)object.visible=false;scene.scene.background=null;scene.composer.render=()=>scene.renderer.render(scene.scene,scene.camera);records.push(await sample('empty-three-scene'));
     for(const child of shadow.querySelectorAll<HTMLElement>('.cosmos-root>*,.cosmos-portal'))if(!child.classList.contains('cosmos-scene'))child.style.display='none';records.push(await sample('only-canvas'));
