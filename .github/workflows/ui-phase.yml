@@ -5,7 +5,7 @@ on:
       spec:
         type: choice
         default: all
-        options: [all, visual, focus]
+        options: [all, visual, focus, controls]
 permissions:
   contents: read
 concurrency:
@@ -24,11 +24,13 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run browser
-        if: inputs.spec != 'visual' && inputs.spec != 'focus'
+        if: inputs.spec == 'all'
       - run: npm run browser -- tests/browser/visual-review.spec.ts
         if: inputs.spec == 'visual'
       - run: npm run browser -- tests/browser/ui-focus.spec.ts
         if: inputs.spec == 'focus'
+      - run: npm run browser -- tests/browser/settings-controls.spec.ts
+        if: inputs.spec == 'controls'
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
