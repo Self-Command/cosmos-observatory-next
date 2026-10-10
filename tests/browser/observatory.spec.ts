@@ -2,6 +2,7 @@ import { test,expect } from '@playwright/test';
 test('Real 3D folders, independent transforms, shadcn panels and real parser spider',async({page},testInfo)=>{
   const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();
   await expect(page.locator('canvas').first()).toBeVisible();await expect.poll(()=>page.evaluate(()=>{const canvas=document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any;return canvas.__cosmosScene?.debug().spiderLoaded;})).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>((document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any).__cosmosScene.debug().backgroundLoaded))).toBe(true);
   const initial=await page.evaluate(()=>((document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any).__cosmosScene.debug()));expect(initial.positions.length).toBe(630);expect(initial.positions.every((p:any)=>p.geometry==='SphereGeometry')).toBe(true);expect(new Set(initial.positions.map((p:any)=>Math.round(p.local[2]*100))).size).toBeGreaterThan(10);expect(initial.edgeVertices).toBeGreaterThan(0);
   await expect.poll(()=>page.locator('.graph-label:visible').count()).toBeLessThan(28);
   const panelBox=await page.locator('[data-panel=events]').boundingBox();expect(panelBox?.width).toBeCloseTo(244,0);expect(panelBox?.height).toBeCloseTo(142,0);expect(panelBox?.x).toBeCloseTo(28,0);expect(panelBox?.y).toBeCloseTo(940,0);
@@ -24,7 +25,7 @@ test('Panel resizing, locking, hiding and restoration preserve the 3D camera',as
   await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();
   await page.evaluate(async()=>{await (window as any).fixture.updateSettings({animationPaused:true,patrolPaused:true});});
   const panel=page.locator('[data-panel=events]'),camera=await page.evaluate(()=>((document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any).__cosmosScene.debug().camera));
-  const original=(await panel.boundingBox())!;await page.mouse.move(original.x+original.width-2,original.y+original.height-2);await page.mouse.down();await page.mouse.move(original.x+original.width-26,original.y+original.height-20,{steps:15});await page.mouse.up();
+  const original=(await panel.boundingBox())!,handle=panel.locator('..').locator('.panel-resize-bottomRight');await expect(handle).toBeVisible();const grip=(await handle.boundingBox())!;const hit=await page.evaluate(({x,y})=>document.querySelector('#app')!.shadowRoot!.elementFromPoint(x,y)?.className,{x:grip.x+grip.width/2,y:grip.y+grip.height/2});expect(hit).toBe('panel-resize-bottomRight');await page.mouse.move(grip.x+grip.width/2,grip.y+grip.height/2);await page.mouse.down();await page.mouse.move(grip.x+grip.width/2-24,grip.y+grip.height/2-18,{steps:15});await page.mouse.up();
   await expect.poll(async()=>Math.round((await panel.boundingBox())!.width)).toBeLessThan(Math.round(original.width)-10);
   const resized=(await panel.boundingBox())!;expect(resized.height).toBeLessThan(original.height-10);
   await page.getByRole('button',{name:'事件轨迹最大化',exact:true}).click();await expect.poll(async()=>(await panel.boundingBox())!.width).toBeGreaterThan(1500);
