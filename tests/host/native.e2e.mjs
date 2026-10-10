@@ -37,6 +37,12 @@ describe('Real Obsidian native plugin',()=>{
     }
     await browser.executeObsidian(({app,require})=>{for(const leaf of app.workspace.getLeavesOfType('cosmos-observatory-next-view'))leaf.detach();});
   });
+  it('shows a scoped native plugin settings page and opens its actual dashboard',async()=>{
+    await browser.executeObsidian(({app})=>{app.setting.open();app.setting.openTabById('cosmos-observatory-next');});
+    await browser.waitUntil(async()=>browser.executeObsidian(()=>!!document.querySelector('.cosmos-native-settings')?.shadowRoot?.querySelector('.native-settings button')),{timeout:15000});await browser.saveScreenshot('test-results/host/native-plugin-settings.png');
+    const rect=await browser.executeObsidian(()=>{const button=document.querySelector('.cosmos-native-settings').shadowRoot.querySelector('.native-settings button'),rect=button.getBoundingClientRect();return {x:rect.x+rect.width/2,y:rect.y+rect.height/2};});const puppeteer=await browser.getPuppeteer(),pages=await puppeteer.pages(),page=pages.find(page=>page.url().startsWith('app://'))??pages[0];await page.mouse.click(rect.x,rect.y);
+    await browser.waitUntil(async()=>browser.executeObsidian(()=>!!document.querySelector('.cosmos-shadow-host')?.shadowRoot?.querySelector('.cosmos-root')&&!document.querySelector('.cosmos-native-settings')),{timeout:30000});await browser.saveScreenshot('test-results/host/native-settings-open-dashboard.png');
+  });
   it('keeps no-view observation, isolates malformed assets and releases multiple views and plugin listeners',async function(){
     this.timeout(240000);
     const id='cosmos-observatory-next';

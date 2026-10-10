@@ -1,6 +1,11 @@
 name: Default performance iteration
 on:
   workflow_dispatch:
+    inputs:
+      spec:
+        type: choice
+        default: performance
+        options: [performance, render-diagnosis]
 permissions:
   contents: read
 concurrency:
@@ -18,7 +23,7 @@ jobs:
       - run: npm run check
       - run: npm run build
       - run: npx playwright install --with-deps chromium
-      - run: npm run browser -- tests/browser/performance.spec.ts
+      - run: npm run browser -- tests/browser/${{ inputs.spec || 'performance' }}.spec.ts
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with: {name: default-performance, path: test-results/, retention-days: 2}
