@@ -11,6 +11,7 @@ test('Isolate current compositor, effect, geometry and empty framebuffer with fr
       if(name.startsWith('no-background'))scene.settings={...scene.settings,background:false};
       if(name==='no-aura')scene.auraBatch.visible=false;
       if(name==='no-dom'){for(const element of shadow.querySelectorAll<HTMLElement>('.cosmos-root>*'))if(!element.classList.contains('cosmos-scene'))element.style.setProperty('display','none','important');scene.labelRenderer.domElement.style.display='none';}
+      scene.backdropDirty=true;scene.bloomDirty=true;
     },name);
     await page.waitForTimeout(2000);const sample=()=>page.evaluate(()=>{const canvas=document.querySelector('#app')!.shadowRoot!.querySelector('canvas')!,scene=(canvas as any).__cosmosScene,debug=scene.debug();return {at:performance.now(),frames:debug.frames,drawCalls:debug.drawCalls,triangles:debug.triangles,costs:debug.frameCosts,worker:debug.worker,renderFailed:debug.renderFailed,context:canvas.getContext('webgl2')!.getContextAttributes()};});
     const start=await sample();await page.waitForTimeout(12000);const end=await sample(),record={name,fps:(end.frames-start.frames)/((end.at-start.at)/1000),start,end};records.push(record);console.log('RENDER-VARIANT',JSON.stringify({name,fps:record.fps,drawCalls:end.drawCalls,triangles:end.triangles,failed:end.renderFailed,context:end.context}));await context.close();
