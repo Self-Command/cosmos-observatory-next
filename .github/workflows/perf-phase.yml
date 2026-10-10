@@ -9,7 +9,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: perf-${{ github.ref }}
+  group: perf-${{ github.ref }}-${{ inputs.spec || 'performance' }}
   cancel-in-progress: true
 jobs:
   default-performance:
