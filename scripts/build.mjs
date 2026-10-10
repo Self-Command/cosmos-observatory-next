@@ -1,6 +1,6 @@
 import './guard.mjs';
 import { build } from 'esbuild';
-import { readFile, writeFile, mkdir, cp } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, cp, readdir } from 'node:fs/promises';
 import postcss from 'postcss';
 import tailwind from '@tailwindcss/postcss';
 import { builtinModules } from 'node:module';
@@ -27,6 +27,7 @@ await cp('tests/harness/index.html','dist/harness/index.html');await cp('vendor/
 await cp('docs/assets/dashboard-spheres-v2.svg','dist/harness/reference.svg');
 await cp('LICENSE','dist/plugin/LICENSE');
 await writeFile('dist/plugin/THIRD-PARTY-NOTICES.md',await readFile('docs/THIRD-PARTY-NOTICES.md'));
-const provenance={commit:process.env.GITHUB_SHA,run:`https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,builtOnce:true,lockSHA256:createHash('sha256').update(await readFile('package-lock.json')).digest('hex'),cosmograph:'c455f466f7df9c23724ba291aa9f2463ca553aaa',candidate:false};
+for(const file of ['USER-GUIDE.md','SOURCE-INTEGRATIONS.md','COMPLETION-MATRIX.md','VISUAL-REVIEW.md','PROGRESS.md'])await cp(`docs/${file}`,`dist/plugin/${file}`);
+const provenance={commit:process.env.GITHUB_SHA,run:`https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,builtOnce:true,purpose:'Immutable input; candidate packaging requires all verification jobs',lockSHA256:createHash('sha256').update(await readFile('package-lock.json')).digest('hex'),cosmograph:'c455f466f7df9c23724ba291aa9f2463ca553aaa'};
 await writeFile('dist/plugin/BUILD-INFO.json',JSON.stringify(provenance,null,2));
-const integrity={};for(const file of ['main.js','bridge.mjs','manifest.json','styles.css','assets/spider.glb','BUILD-INFO.json'])integrity[file]=createHash('sha256').update(await readFile(`dist/plugin/${file}`)).digest('hex');await writeFile('dist/integrity.json',JSON.stringify(integrity,null,2));
+const integrity={};async function hashDirectory(relative=''){for(const entry of await readdir(`dist/plugin/${relative}`,{withFileTypes:true})){const file=relative+entry.name;if(entry.isDirectory())await hashDirectory(file+'/');else integrity[file]=createHash('sha256').update(await readFile(`dist/plugin/${file}`)).digest('hex');}}await hashDirectory();await writeFile('dist/integrity.json',JSON.stringify(integrity,null,2));
