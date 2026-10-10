@@ -1,0 +1,25 @@
+name: Update dependency lock in Actions
+on: workflow_dispatch
+permissions:
+  contents: write
+  actions: write
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '22'}
+      - run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Commit lock and dispatch verification
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
+          git add package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Lock d3-force-3d dependencies generated in Actions'
+            git push
+          fi
+          gh workflow run phase.yml --ref main

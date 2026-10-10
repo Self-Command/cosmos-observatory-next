@@ -7,3 +7,5 @@
 - Vault v3 schema, system-engine.cjs and project-index.cjs: Self-Command. Source byte hashes in model-source.json; only inspect/collect called through a read-only facade. Newly discovered engine code is never evaluated.
 
 Runtime packages and precise versions are recorded in package-lock.json. Framework capabilities are composed; custom code implements vault projection, multi-world grouping, evidence binding, settings and the product theme.
+
+- d3-force-3d 3.0.6: Vasco Asturiano, MIT, https://github.com/vasturiano/d3-force-3d. Mature 3D force simulation runs inside an isolated Worker. Custom forces only constrain members to their real world and preserve world transforms during drag. Dependency lock generation and validation run in Actions.
