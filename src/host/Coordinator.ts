@@ -86,7 +86,7 @@ export class Coordinator {
     const covered=new Set(this.realtime.model.coveredPaths);this.realtime.worlds=this.realtime.worlds.map(world=>{const members=projection.files.filter(file=>file.worldId===world.id);return {...world,coverage:members.length&&members.every(file=>covered.has(file.path))?'evaluated':this.realtime.model.status==='pending'?'pending':'unassessed'};});
     if(this.realtime.revision>1)for(const file of projection.files){const old=before.get(file.id);if(old?.version!==file.version||old?.path!==file.path||old?.cacheReady!==file.cacheReady)this.patrol.changed(file);}
     this.emit();await this.persist(false);
-  }).catch(error=>{this.report(String(error));});}
+  }).catch(error=>{this.report(String(error));if(full)throw error;});}
   private async modelText(filePath:string){const file=this.app.vault.getAbstractFileByPath(filePath),version=file instanceof TFile?`${file.stat.mtime}:${file.stat.size}`:'';const cached=this.modelTexts.get(filePath);if(version&&cached?.version===version)return cached.text;const text=await this.app.vault.adapter.read(filePath);this.modelTexts.set(filePath,{version,text});return text;}
   private async evaluateBusiness(){
     try{const schemaText=await this.modelText(String(this.settings.schemaPath)),engine=await this.modelText(String(this.settings.enginePath));this.schema=JSON.parse(schemaText);const engineHash=this.hash(engine),engineVerified=engineHash===modelLock.files['system-engine.cjs'];let publications:PublicationRecord[]=[];

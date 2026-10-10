@@ -12,7 +12,7 @@ async function capture(page:Page,info:TestInfo,name:string){
     await expect(popup).toBeVisible();const bounds=(await popup.boundingBox())!,viewport=page.viewportSize()!;
     expect(bounds.x).toBeGreaterThanOrEqual(-1);expect(bounds.y).toBeGreaterThanOrEqual(-1);expect(bounds.x+bounds.width).toBeLessThanOrEqual(viewport.width+1);expect(bounds.y+bounds.height).toBeLessThanOrEqual(viewport.height+1);
     const title=popup.getByRole('heading').first();await expect(title).toBeVisible();dialog=await popup.evaluate(element=>({width:element.clientWidth,scrollWidth:element.scrollWidth,font:getComputedStyle(element).fontSize,title:element.querySelector('h2')?.textContent}));expect((dialog as any).scrollWidth).toBeLessThanOrEqual((dialog as any).width+1);
-    await page.keyboard.press('Tab');expect(await page.evaluate(()=>!!document.querySelector('#app')!.shadowRoot!.activeElement?.closest('[role=dialog]'))).toBe(true);
+    await page.keyboard.press('Tab');expect(await page.evaluate(()=>!!document.querySelector('#app')!.shadowRoot!.activeElement?.closest('.cosmos-portal'))).toBe(true);
   }
   await page.screenshot({path:info.outputPath(`${name}.png`)});records.push({name,viewport:page.viewportSize(),dialog});
 }

@@ -1,7 +1,7 @@
 import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from './official/dialog';
 import {Sheet,SheetContent,SheetHeader,SheetTitle,SheetDescription} from './official/sheet';
 import {Button} from './official/button';
-import {EventBrowser,EventEvidence,FileBrowser,FileEvidence,WorldMap,coverageData,RelationRows,ChecksBrowser,SystemEvidence,SessionEvidence,type Detail,type EvidenceActions} from './EvidenceContent';
+import {EventBrowser,EventEvidence,FileBrowser,FileEvidence,WorldMap,coverageData,RelationRows,ChecksBrowser,SystemEvidence,SessionEvidence,eventIdentity,type Detail,type EvidenceActions} from './EvidenceContent';
 import {ReplayControl} from './ReplayControl';
 import type {Controller} from './controller';
 import type {Snapshot} from '../core/types';
@@ -13,7 +13,7 @@ export function DetailDialog({value,close,snapshot,controller,actions,worldSetti
     case 'world':return <div className="evidence-browser">{world&&<><p>{world.role} · {world.count} 文件 · {world.coverage}</p><div className="action-row"><Button size="xs" onClick={()=>actions.world(world.id)}>定位世界</Button><Button size="xs" variant="outline" onClick={worldSettings}>配置中心 / 颜色 / 职责</Button></div></>}<FileBrowser files={snapshot.files.filter(file=>world?file.worldId===world.id:file.worldId===null)} actions={actions}/></div>;
     case 'file':return <FileEvidence id={value.id!} snapshot={snapshot} controller={controller} actions={actions}/>;
     case 'events':return <EventBrowser snapshot={snapshot} settings={controller.settings} actions={actions} ids={value.ids}/>;
-    case 'event':{const event=snapshot.events.find(event=>event.id===value.id);return event?<EventEvidence event={event} snapshot={snapshot} actions={actions} timezone={String(controller.settings.timezone)}/>:<p>该记录已超出当前日志保留范围。</p>;}
+    case 'event':{const event=snapshot.events.find(event=>eventIdentity(event)===value.id);return event?<EventEvidence event={event} snapshot={snapshot} actions={actions} timezone={String(controller.settings.timezone)}/>:<p>该记录已超出当前日志保留范围。</p>;}
     case 'coverage':{const data=coverageData(snapshot);if(value.mode==='linked'||value.mode==='isolated')return <FileBrowser files={value.mode==='isolated'?data.isolated:snapshot.files.filter(file=>data.linked.has(file.id))} actions={actions}/>;if(value.mode==='unresolved')return <div className="evidence-detail">{snapshot.unresolved?.map(link=><div key={link.id}><p>{link.path} → {link.target} · {link.kind}</p><pre>{link.evidence}</pre><Button size="xs" onClick={()=>actions.open(link.path)}>打开来源文件</Button></div>)}{!snapshot.unresolved?.length&&<p>当前没有未解析链接。</p>}</div>;return <RelationRows relations={value.mode==='cross'?data.cross:snapshot.relations} snapshot={snapshot} actions={actions}/>;}
     case 'checks':return <ChecksBrowser snapshot={snapshot} controller={controller} actions={actions}/>;
     case 'system':return <SystemEvidence snapshot={snapshot} controller={controller} actions={actions}/>;
