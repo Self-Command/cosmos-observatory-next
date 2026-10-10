@@ -29,7 +29,7 @@ export class Coordinator {
   get settings(){return validateSettings(this.state.settings);}
   subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>this.listeners.delete(listener);};
   getSnapshot=()=>this.snapshot;
-  private emit(){if(this.stopped)return;this.listeners.forEach(fn=>fn());}
+  private emit(){if(this.stopped)return;this.snapshot={...this.snapshot};this.listeners.forEach(fn=>fn());}
   async start(){if(this.started)return;this.started=true;await mkdir(this.directory,{recursive:true});
     const adapter=new JSONFile<HistoryData>(path.join(this.directory,'history.json'));
     this.history=new HistoryStore(this.state,{read:async()=>{try{return await adapter.read();}catch{return null;}},write:value=>adapter.write(value)});
@@ -39,7 +39,7 @@ export class Coordinator {
     const vault=this.app.vault;
     this.refs.push(vault.on('create',file=>this.changed('create',file.path)),vault.on('modify',file=>this.changed('modify',file.path)),vault.on('rename',(file,old)=>{renameIdentity(this.state,old,file.path);this.changed('rename',file.path);}),vault.on('delete',file=>{forgetIdentity(this.state,file.path);this.changed('delete',file.path);}));
     this.refs.push(this.app.metadataCache.on('changed',()=>this.refreshDebounced()),this.app.metadataCache.on('resolved',()=>this.refreshDebounced()));
-    await this.refresh();this.patrol.start();await this.configureReceiver();this.configureHistory();
+    this.patrol.configure(this.settings);await this.refresh();this.patrol.start();await this.configureReceiver();this.configureHistory();
   }
   private changed(action:string,filePath:string){if(filePath.startsWith(this.app.vault.configDir+'/plugins/cosmos-observatory-next/'))return;this.event({kind:'file',source:'obsidian.vault',action,path:filePath,status:'success',evidence:'Vault 事件；无智能体归因'});this.refreshDebounced();}
   event(input:Omit<ObservatoryEvent,'id'|'at'> & Partial<Pick<ObservatoryEvent,'id'|'at'>>){const event={id:input.id??crypto.randomUUID(),at:input.at??Date.now(),...input} as ObservatoryEvent;if(this.snapshot.replay){if(this.replayLive)this.replayLive={...this.replayLive,events:[...this.replayLive.events,event].slice(-Number(this.settings.eventLimit))};return;}this.snapshot={...this.snapshot,events:[...this.snapshot.events,event].slice(-Number(this.settings.eventLimit))};this.logger?.info({kind:event.kind,action:event.action,status:event.status},'observation');this.emit();}
