@@ -1,10 +1,15 @@
 name: UI and performance iteration
 on:
   workflow_dispatch:
+    inputs:
+      spec:
+        type: choice
+        default: all
+        options: [all, visual]
 permissions:
   contents: read
 concurrency:
-  group: ui-${{ github.ref }}
+  group: ui-${{ github.ref }}-${{ inputs.spec || 'all' }}
   cancel-in-progress: true
 jobs:
   browser:
@@ -19,6 +24,9 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run browser
+        if: inputs.spec != 'visual'
+      - run: npm run browser -- tests/browser/visual-review.spec.ts
+        if: inputs.spec == 'visual'
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
