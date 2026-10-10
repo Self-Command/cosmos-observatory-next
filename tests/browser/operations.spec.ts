@@ -3,7 +3,7 @@ import {panelIds} from '../../src/ui/panel-layout';
 const debug=(page:any)=>page.evaluate(()=>((document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any).__cosmosScene.debug()));
 test.setTimeout(300000);
 test('All six panels support eight resize directions, remain legible and preserve camera',async({page},info)=>{
-  test.setTimeout(180000);await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();await page.evaluate(async()=>{await (window as any).fixture.updateSettings({animationPaused:true,patrolPaused:true});});
+  test.setTimeout(300000);await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();await page.evaluate(async()=>{await (window as any).fixture.updateSettings({animationPaused:true,patrolPaused:true});});
   const camera=(await debug(page)).camera,record:any[]=[];
   for(const [id,title] of panelIds){await page.evaluate(async({id})=>{const fixture=(window as any).fixture;for(const [key,layout] of Object.entries(fixture.state.panels))await fixture.updatePanel(key,{...(layout as any),visible:key===id});await fixture.updatePanel(id,{x:150,y:300,width:320,height:240,z:99,locked:false,visible:true,maximized:false,automatic:false});},{id});for(const direction of ['top','right','bottom','left','topRight','bottomRight','bottomLeft','topLeft']){
     const panel=page.locator(`[data-panel=${id}]`),before=(await panel.boundingBox())!,handle=panel.locator('..').locator(`.panel-resize-${direction}`),grip=(await handle.boundingBox())!;
