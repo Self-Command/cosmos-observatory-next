@@ -124,6 +124,7 @@
 .observatory-panel{border-color:rgba(100,140,170,var(--panel-border-opacity))!important;}
 .settings-tabs{display:flex;flex-direction:column;gap:12px;}.settings-groups{align-items:flex-start!important;align-content:flex-start;flex-shrink:0;max-width:100%;}.settings-groups [data-slot=tabs-trigger]{height:auto!important;min-height:28px;line-height:1.4;}
 .evidence-dialog.evidence-dialog-compact{height:auto!important;min-height:220px;}.evidence-dialog-compact .detail-body{flex:0 1 auto;}
+@media(max-width:700px){.world-selection{display:flex;top:202px!important;left:10px;max-width:calc(100% - 20px);flex-wrap:wrap;}.world-selection [data-slot=badge]{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}}
 .cosmos-portal button:focus-visible,.cosmos-root button:focus-visible{outline:2px solid #83eadb;outline-offset:2px;}
 @media(max-width:700px){.cosmos-portal .settings-dialog{padding:14px!important;}.cosmos-portal .setting-field{flex-wrap:wrap;gap:8px;}.cosmos-portal .setting-field>span{width:100%;}.cosmos-portal .setting-field>input{width:100%;}.cosmos-portal .world-setting{grid-template-columns:1fr;}.cosmos-portal .settings-groups{gap:3px;}.cosmos-portal .settings-groups button{white-space:normal;height:auto;min-height:28px;}.cosmos-portal .evidence-sheet{padding:14px;}}
 @media(max-width:420px){.observatory-header .header-counts{display:none;}.observatory-header .search{flex:1;width:90px;}.search-results{left:10px!important;right:10px!important;width:auto!important;max-height:65%;overflow:auto;}}
