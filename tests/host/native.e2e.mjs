@@ -1,7 +1,7 @@
 import { browser } from '@wdio/globals';import assert from 'node:assert/strict';import { mkdir,writeFile } from 'node:fs/promises';
 describe('Real Obsidian native plugin',()=>{
   it('loads, scans actual files, discovers folders and reports real syntax evidence',async()=>{
-    await browser.executeObsidianCommand('cosmos-observatory-next:open-3d-knowledge-graph');await browser.waitUntil(async()=>browser.execute(()=>{const host=document.querySelector('.cosmos-shadow-host');return !!host?.shadowRoot?.querySelector('.cosmos-root');}),{timeout:60000});
+    await browser.executeObsidianCommand('cosmos-observatory-next:open-3d-knowledge-graph');await browser.waitUntil(async()=>browser.execute(()=>{const host=document.querySelector('.cosmos-shadow-host');const error=host?.shadowRoot?.querySelector('.native-open-error');if(error)throw Error(error.textContent);return !!host?.shadowRoot?.querySelector('.cosmos-root');}),{timeout:60000});
     const info=await browser.execute(()=>({versions:process.versions,obsidian:app.version}));await mkdir('test-results/host',{recursive:true});await writeFile('test-results/host/runtime.json',JSON.stringify(info,null,2));
     await browser.waitUntil(async()=>browser.execute(()=>app.plugins.plugins['cosmos-observatory-next'].coordinator.snapshot.model.status==='ready'),{timeout:30000,timeoutMsg:'Native metadata cache never became ready for business checks'});
     const initial=await browser.execute(async()=>{const plugin=app.plugins.plugins['cosmos-observatory-next'];return plugin.coordinator.snapshot;});assert.ok(initial.worlds.length>=7);assert.ok(initial.files.length>=20);assert.equal(initial.model.status,'ready');
