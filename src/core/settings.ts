@@ -30,6 +30,7 @@ export function assertSettings(input:Record<string,unknown>){
     if(['string','color','select'].includes(def.type)&&(typeof value!=='string'||value.length>4096||(def.options&&!def.options.includes(value))||(def.type==='color'&&!/^#[0-9a-f]{6}$/i.test(value))))throw Error(`${def.label} 无效`);
   }
   if(input.timezone!==undefined){try{new Intl.DateTimeFormat('zh-CN',{timeZone:String(input.timezone)});}catch{throw Error('时区无效');}}
+  for(const key of ['schemaPath','enginePath','publicationEvidencePath','include','exclude'])if(input[key]!==undefined){const values=['include','exclude'].includes(key)?String(input[key]).split(',').map(value=>value.trim()).filter(Boolean):[String(input[key]).trim()];for(const value of values){if(!value&&key==='publicationEvidencePath')continue;if(!value||/^[\\/]|^[a-z]:/i.test(value)||value.replaceAll('\\','/').split('/').some(part=>part==='.'||part==='..'))throw Error(`${(registry as Record<string,SettingDefinition>)[key].label} 必须为知识库内相对路径`);}}
 }
 export function validateSettings(input:Record<string,unknown>):Settings {
   const output=defaults();
@@ -41,8 +42,10 @@ export function validateSettings(input:Record<string,unknown>):Settings {
   }
   try{new Intl.DateTimeFormat('zh-CN',{timeZone:String(output.timezone)});}catch{output.timezone=registry.timezone.default;}
   output.maxWaitMs=Math.max(Number(output.maxWaitMs),Number(output.debounceMs));
+  for(const key of ['schemaPath','enginePath','publicationEvidencePath','include','exclude'] as const){try{assertSettings({[key]:output[key]});output[key]=String(output[key]).split(',').map(value=>value.trim().replaceAll('\\','/').replace(/\/+$/,'')).join(',');}catch{output[key]=registry[key].default;}}
   return output;
 }
 export const splitList=(value:SettingValue)=>String(value).split(',').map(x=>x.trim()).filter(Boolean);
+export function pathFilter(settings:Settings){const include=splitList(settings.include),exclude=splitList(settings.exclude);return (path:string)=>!exclude.some(prefix=>path===prefix||path.startsWith(prefix+'/'))&&(!include.length||include.some(prefix=>path===prefix||path.startsWith(prefix+'/')||prefix.startsWith(path+'/')));}
 export const semanticPresets:Record<string,{color:string;role:string}>={太阳:{color:'#f5c578',role:'创造、执行、成果'},月亮:{color:'#70b9ff',role:'理解、认知、检验'},地球:{color:'#6dddaf',role:'现实、生活、成长'},星云:{color:'#b299ff',role:'输入、灵感、可能性'},银河:{color:'#83eadb',role:'导航、索引、观测'},宇宙:{color:'#ef94c1',role:'规则、系统、演化'},黑洞:{color:'#97a9cf',role:'沉积、归档、再激活'}};
 

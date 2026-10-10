@@ -1,10 +1,11 @@
-import { semanticPresets, splitList, type Settings } from './settings';
+import { semanticPresets, splitList, pathFilter, type Settings } from './settings';
 import type { FileDescriptor, RelationDescriptor, UnresolvedLink, WorldDescriptor, PersistentState } from './types';
 export interface RawEntry { path:string; name:string; extension?:string; mtime?:number; size?:number; cacheReady?:boolean; properties?:Record<string,unknown> }
 export interface VaultProjection { entries:RawEntry[]; links:Record<string,Record<string,number>>; nativeLinks?:Record<string,Record<string,number>>; unresolved?:Record<string,Record<string,number>>; resolve:(link:string,from:string)=>string|undefined }
 export function identity(state:PersistentState,path:string){return Object.hasOwn(state.identities,path)?state.identities[path]:(state.identities[path]=crypto.randomUUID());}
 export function renameIdentity(state:PersistentState,oldPath:string,newPath:string){
   for(const path of Object.keys(state.identities)) if(path===oldPath || path.startsWith(oldPath+'/')){state.identities[newPath+path.slice(oldPath.length)]=state.identities[path];delete state.identities[path];}
+  for(const [id,layout] of Object.entries(state.worlds))if(layout.centerPath&&(layout.centerPath===oldPath||layout.centerPath.startsWith(oldPath+'/')))state.worlds[id]={...layout,centerPath:newPath+layout.centerPath.slice(oldPath.length)};
 }
 export function forgetIdentity(state:PersistentState,path:string){for(const key of Object.keys(state.identities))if(key===path||key.startsWith(path+'/'))delete state.identities[key];}
 export class VaultEntryIndex {
@@ -16,8 +17,7 @@ export class VaultEntryIndex {
   values(){return [...this.entries.values()];}
 }
 export function projectVault(input:VaultProjection,state:PersistentState,settings:Settings){
-  const include=splitList(settings.include),exclude=splitList(settings.exclude);
-  const accepted=(path:string)=>!exclude.some(prefix=>path===prefix||path.startsWith(prefix+'/'))&&(!include.length||include.some(prefix=>path===prefix||path.startsWith(prefix+'/')||prefix.startsWith(path+'/')));
+  const accepted=pathFilter(settings);
   const entries=input.entries.filter(e=>e.path && accepted(e.path));
   const roots=new Set(entries.filter(e=>!e.path.includes('/') && e.extension===undefined).map(e=>e.path));
   const worlds:WorldDescriptor[]=Array.from(roots).sort((a,b)=>a.localeCompare(b,'zh-CN')).map(path=>{
