@@ -18,8 +18,8 @@ export class WorldSimulation {
   command(command:PhysicsCommand){
     this.sequence=Math.max(this.sequence,command.sequence);
     if(command.type==='graph'){
-      const old=this.byId;this.revision=command.revision;this.worlds=new Map(command.worlds.map(world=>[world.id,this.space(world)]));
-      this.bodies=command.nodes.filter(node=>this.worlds.has(node.worldId)).map(node=>{const previous=old.get(node.id),body:Body={...node,x:0,y:0,z:0,vx:0,vy:0,vz:0};if(previous&&previous.worldId===node.worldId&&!node.center){body.x=previous.x;body.y=previous.y;body.z=previous.z;body.vx=previous.vx;body.vy=previous.vy;body.vz=previous.vz;this.fix(body);}else this.place(body,node.center?[0,0,0]:node.position);return body;});
+      const old=command.reset?new Map<string,Body>():this.byId,relative=new Map([...old].map(([id,body])=>[id,this.local(body).toArray() as Vec3]));this.revision=command.revision;this.worlds=new Map(command.worlds.map(world=>[world.id,this.space(world)]));
+      this.bodies=command.nodes.filter(node=>this.worlds.has(node.worldId)).map(node=>{const previous=old.get(node.id),body:Body={...node,x:0,y:0,z:0,vx:0,vy:0,vz:0};if(previous&&previous.worldId===node.worldId&&!node.center){this.place(body,relative.get(node.id)!);body.vx=previous.vx;body.vy=previous.vy;body.vz=previous.vz;this.fix(body);}else this.place(body,node.center?[0,0,0]:node.position);return body;});
       this.byId=new Map(this.bodies.map(body=>[body.id,body]));this.links=command.links.filter(link=>this.byId.has(link.source)&&this.byId.has(link.target)&&link.source!==link.target).map(link=>({...link}));this.simulation.nodes(this.bodies);this.parameters=command.parameters;this.configure();this.constrain();this.simulation.alpha(.8);
     }else if(command.type==='parameters'){this.parameters=command.parameters;this.configure();this.simulation.alpha(.6);}
     else if(command.type==='world')this.moveWorld(command.id,command.layout,command.radius,command.phase);

@@ -16,7 +16,7 @@ export function parseConfiguration(text:string){const data=JSON.parse(text);if(!
 export function migrateState(value:unknown):PersistentState{
   const data=record(value)&&[1,2].includes(Number(value.schemaVersion))?value:{};
   const filtered=<T>(input:unknown,valid:(value:unknown)=>value is T)=>Object.fromEntries(Object.entries(record(input)?input:{}).filter(([,item])=>valid(item))) as Record<string,T>;
-  const state:PersistentState={schemaVersion:2,settings:validateSettings(record(data.settings)?data.settings:{}),identities:filtered(data.identities,(item):item is string=>typeof item==='string'&&item.length>0),worlds:filtered(data.worlds,validWorld),panels:filtered(data.panels,validPanel),nodes:filtered(data.nodes,validNode),assetConfirmations:filtered(data.assetConfirmations,(item):item is boolean=>typeof item==='boolean')};
+  const state:PersistentState={schemaVersion:2,settings:validateSettings(record(data.settings)?data.settings:{}),identities:filtered(data.identities,(item):item is string=>typeof item==='string'&&item.length>0),worlds:filtered(data.worlds,validWorld),panels:filtered(data.panels,validPanel),nodes:filtered(data.nodes,validNode),assetConfirmations:filtered(data.assetConfirmations,(item):item is boolean=>typeof item==='boolean'),layoutRevision:Number.isSafeInteger(data.layoutRevision)?Number(data.layoutRevision):0};
   const rootId=state.identities['@vault-root'];if(rootId)delete state.worlds[rootId];delete state.identities['@vault-root'];
   return state;
 }
