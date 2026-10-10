@@ -9,7 +9,7 @@ export class HistoryStore {
   async load(){await this.db.read();if(!Array.isArray(this.db.data?.snapshots))throw Error('历史快照契约错误');this.db.data.snapshots=this.db.data.snapshots.filter(snapshot=>typeof snapshot?.at==='number'&&Array.isArray(snapshot.files)&&Array.isArray(snapshot.worlds)&&Array.isArray(snapshot.events)&&Array.isArray(snapshot.relations)&&snapshot.results&&snapshot.patrol&&snapshot.model).map(snapshot=>({...snapshot,assets:snapshot.assets??[],unresolved:snapshot.unresolved??[],sources:snapshot.sources??[],assetChanges:snapshot.assetChanges??[],spatialStatus:snapshot.space?'recorded':'missing'}));return this.db.data;}
   snapshots(){return this.db.data.snapshots;}
   save(state:PersistentState,snapshot:Snapshot|undefined,days:number,mib:number){return this.queue.add(async()=>{
-    const next:HistoryData={state:structuredClone(state),snapshots:this.db.data.snapshots.slice()};if(snapshot)next.snapshots.push(structuredClone({...snapshot,replay:false,space:{worlds:state.worlds,panels:state.panels,nodes:state.nodes??{},revision:state.layoutRevision??0},spatialStatus:'recorded'}));
+    const next:HistoryData={state:structuredClone(state),snapshots:this.db.data.snapshots.slice()};if(snapshot)next.snapshots.push(structuredClone({...snapshot,replay:false,space:snapshot.space??{worlds:state.worlds,panels:state.panels,nodes:state.nodes??{},revision:state.layoutRevision??0},spatialStatus:'recorded'}));
     const cutoff=Date.now()-days*86400000;next.snapshots=next.snapshots.filter(s=>s.at>=cutoff);
     const size=(value:unknown)=>new TextEncoder().encode(JSON.stringify(value)).byteLength;
     while(next.snapshots.length&&size(next)>mib*1024*1024)next.snapshots.shift();
