@@ -1,0 +1,10 @@
+import {test,expect} from '@playwright/test';
+import {writeFile} from 'node:fs/promises';
+test('Default software rendering meets 630 and 1400 node frame and input budgets',async({page},info)=>{
+  test.setTimeout(180000);await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();
+  const sample=()=>page.evaluate(()=>{const scene=(document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any).__cosmosScene;const debug=scene.debug();return {at:performance.now(),frames:debug.frames,nodes:debug.positions.length,worker:debug.worker,frameCosts:debug.frameCosts,drawCalls:debug.drawCalls,triangles:debug.triangles,geometries:debug.geometries,configuration:(window as any).fixture.settings};});
+  const measure=async()=>{const start=await sample();await page.waitForTimeout(20000);const end=await sample();return {start,end,fps:(end.frames-start.frames)/((end.at-start.at)/1000)};};
+  const normal=await measure(),latency:number[]=[];for(let i=0;i<12;i++){const before=Date.now();await page.getByLabel('搜索文件').fill(`文件-${i}`);await expect(page.getByRole('listbox')).toBeVisible();latency.push(Date.now()-before);}await page.getByLabel('搜索文件').fill('');
+  await page.evaluate(async()=>{await (window as any).fixture.seedStress();});await expect(page.getByText('10000 文件',{exact:true})).toBeVisible();const stress=await measure(),sorted=latency.sort((a,b)=>a-b),p95=sorted[Math.ceil(sorted.length*.95)-1];
+  const data={renderer:'Chromium / SwiftShader',normal,stress,interaction:{latency,p95}};console.log('DEFAULT-PERFORMANCE',JSON.stringify({normalFps:normal.fps,stressFps:stress.fps,p95,normalCost:normal.end.frameCosts,stressCost:stress.end.frameCosts}));await writeFile(info.outputPath('default-performance.json'),JSON.stringify(data,null,2));await page.screenshot({path:info.outputPath('default-1400-nodes.png')});expect(normal.start.nodes).toBe(630);expect(normal.fps).toBeGreaterThanOrEqual(15);expect(stress.start.nodes).toBe(1400);expect(stress.fps).toBeGreaterThanOrEqual(10);expect(p95).toBeLessThanOrEqual(200);
+});
