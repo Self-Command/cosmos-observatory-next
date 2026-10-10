@@ -41,7 +41,7 @@ export class Coordinator {
   subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>this.listeners.delete(listener);};
   getSnapshot=()=>this.snapshot;
   getLayoutState=():SpatialState=>this.replaySnapshot?.space??{worlds:this.replaySnapshot?{}:{...this.observedWorlds,...this.state.worlds},panels:this.replaySnapshot?{}:this.state.panels,nodes:this.replaySnapshot?{}:this.state.nodes??{},revision:this.state.layoutRevision??0};
-  getWorldLayout=(id:string)=>this.replaySnapshot?this.replaySnapshot.space?.worlds[id]:this.state.worlds[id]??this.observedWorlds[id];
+  getWorldLayout=(id:string)=>{if(this.replaySnapshot)return this.replaySnapshot.space?.worlds[id];const saved=this.state.worlds[id],observed=this.observedWorlds[id];return saved?.radiusAutomatic&&observed?{...saved,radius:observed.radius}:saved??observed;};
   private emit(){if(!this.stopped)this.notify();}
   private report(message:string){this.realtime={...this.realtime,error:message};this.emit();}
   private raw(file:TAbstractFile):RawEntry{return {path:file.path,name:file.name,...(file instanceof TFile?{extension:file.extension,mtime:file.stat.mtime,size:file.stat.size,cacheReady:file.extension!=='md'||!!this.app.metadataCache.getFileCache(file),properties:this.app.metadataCache.getFileCache(file)?.frontmatter}:{})};}
