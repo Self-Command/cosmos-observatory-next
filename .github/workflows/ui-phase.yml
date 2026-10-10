@@ -41,3 +41,145 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with: {name: ui-mouse-videos, path: 'test-results/**/*.webm', retention-days: 2}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-00
+          path: 'test-results/**/*settings-世界*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-01
+          path: 'test-results/**/*settings-文件节点*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-02
+          path: 'test-results/**/*settings-镜头与性能*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-03
+          path: 'test-results/**/*settings-引力*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-04
+          path: 'test-results/**/*settings-关系*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-05
+          path: 'test-results/**/*settings-背景*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-06
+          path: 'test-results/**/*settings-蜘蛛与巡查*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-07
+          path: 'test-results/**/*settings-仓库监听*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-08
+          path: 'test-results/**/*settings-模型与扩展*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-09
+          path: 'test-results/**/*settings-面板*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-10
+          path: 'test-results/**/*settings-主题*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-11
+          path: 'test-results/**/*settings-来源与历史*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-12
+          path: 'test-results/**/*settings-独立世界*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-13
+          path: 'test-results/**/*settings-面板布局*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-settings-14
+          path: 'test-results/**/*settings-导入导出*.png'
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-layout
+          path: |
+            test-results/**/*dashboard.png
+            test-results/**/panel-*-maximized.png
+            test-results/**/world-xyz-mouse-controls.png
+            test-results/**/file-mouse-actions.png
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-entries-wide
+          path: |
+            test-results/**/wide-entry-*.png
+            test-results/**/wide-file-sheet.png
+            test-results/**/wide-search.png
+            test-results/**/wide-select.png
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-entries-narrow
+          path: |
+            test-results/**/narrow-large-entry-*.png
+            test-results/**/narrow-large-file-sheet.png
+            test-results/**/narrow-large-search.png
+            test-results/**/narrow-large-select.png
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-evidence
+          path: |
+            test-results/**/events-full.png
+            test-results/**/event-evidence.png
+            test-results/**/coverage-*.png
+            test-results/**/heat-cell-events.png
+            test-results/**/*panel-menu.png
+            test-results/**/panel-tooltip.png
+          retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ui-review-metrics
+          path: |
+            test-results/**/visual-surface-inventory.json
+            test-results/**/every-setting-control.json
+            test-results/**/high-dpi-file-actions.json
+            test-results/**/ui-focus.json
+          retention-days: 2
