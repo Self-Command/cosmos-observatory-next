@@ -20,7 +20,7 @@
 .cosmos-root { position:relative;width:100%;height:100%;overflow:hidden;background:#02050c; }
 .cosmos-root *, .cosmos-portal * { box-sizing:border-box; }
 .cosmos-root button,.cosmos-portal button { cursor:pointer; }
-.cosmos-scene { position:absolute;inset:0; }
+.cosmos-scene { position:absolute;inset:0;isolation:isolate; }
 .cosmos-scene canvas { display:block;width:100%;height:100%;outline:none;touch-action:none; }
 .cosmos-scene .cosmos-bloom{position:absolute;inset:0;pointer-events:none;mix-blend-mode:plus-lighter;}
 .graph-label-layer { position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden; }
@@ -39,7 +39,7 @@
 .node-hover {position:absolute;z-index:45;pointer-events:none;max-width:min(280px,90%);padding:9px 12px;border:1px solid #385363;border-radius:6px;background:#07121af2;color:#c9e4e8;font-size:11px;line-height:1.5;overflow-wrap:anywhere;box-shadow:0 4px 18px #0008;}.node-hover[hidden]{display:none;}.node-hover>div:first-child{color:#83eadb;font-weight:600;}
 .scene-toolbar [data-slot=badge] { font-size:10px;color:#8db2bd; }
 .panel-layer { position:absolute;inset:0 0 27px;pointer-events:none;z-index:12; }
-.observatory-panel { width:100%;height:100%;gap:0!important;padding:0!important;background:rgba(6,13,23,var(--panel-opacity))!important;border:1px solid #6387a929!important;backdrop-filter:blur(12px);border-radius:var(--radius)!important;overflow:hidden;box-shadow:0 12px 34px #0005; }
+.observatory-panel { width:100%;height:100%;gap:0!important;padding:0!important;background:rgba(6,13,23,var(--panel-opacity))!important;border:1px solid #6387a929!important;backdrop-filter:var(--panel-blur,none);border-radius:var(--radius)!important;overflow:hidden;box-shadow:0 12px 34px #0005; }
 .panel-drag { padding:9px 11px!important;border-bottom:1px solid #6387a921;display:flex!important;align-items:center;justify-content:space-between;gap:4px!important;cursor:move;height:36px;user-select:none; }
 .panel-drag [data-slot=card-title] { font-size:10px;letter-spacing:1px;color:#a8bfd1;font-weight:500; }
 .panel-actions { display:flex;opacity:.45; }.panel-drag:hover .panel-actions {opacity:1;}
