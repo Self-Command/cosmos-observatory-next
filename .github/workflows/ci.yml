@@ -53,6 +53,11 @@ jobs:
         if: always()
       - run: node scripts/video-evidence.mjs
         if: always()
+      - run: node scripts/ui-review-sheets.mjs
+        if: always()
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with: {name: ui-review-sheets, path: test-results/ui-review/, retention-days: 2}
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with: {name: browser-evidence, path: test-results/, retention-days: 2}

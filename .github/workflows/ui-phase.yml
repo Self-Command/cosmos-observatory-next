@@ -31,6 +31,13 @@ jobs:
         if: inputs.spec == 'focus'
       - run: npm run browser -- tests/browser/settings-controls.spec.ts
         if: inputs.spec == 'controls'
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+        if: inputs.spec == 'visual' || inputs.spec == 'all'
+      - run: node scripts/ui-review-sheets.mjs
+        if: inputs.spec == 'visual' || inputs.spec == 'all'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with: {name: ui-review-sheets, path: test-results/ui-review/, retention-days: 2}
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:

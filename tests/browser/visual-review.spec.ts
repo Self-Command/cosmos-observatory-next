@@ -28,6 +28,7 @@ test('Every panel, dialog, sheet, dropdown, select and tooltip has wide and narr
     await capture(page,info,`${prefix}-dashboard`);
     for(const [kind,title] of [['实体','世界与文件浏览'],['系统','模型与扩展系统'],['检查','完整检查结果'],['会话','来源、会话与工具'],['回放','历史回放']]){
       await page.getByRole('navigation',{name:'观测入口'}).getByRole('button',{name:kind,exact:true}).click();await expect(page.getByRole('dialog').getByRole('heading',{name:title,exact:true})).toBeVisible();
+      if(kind==='系统'){await page.evaluate(()=>(window as any).fixture.seedVisualAssets());await page.getByRole('dialog').locator('.evidence-detail summary').first().click();await page.getByRole('button',{name:'确认已了解职责',exact:true}).click();await expect(page.getByRole('button',{name:'取消职责确认',exact:true})).toBeVisible();}
       if(kind==='会话')await page.getByRole('dialog').getByText('来源接入说明与配置预览',{exact:true}).click();
       await capture(page,info,`${prefix}-entry-${kind}`);
       if(kind==='检查'){
