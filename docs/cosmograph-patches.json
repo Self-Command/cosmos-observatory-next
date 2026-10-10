@@ -1,0 +1,12 @@
+{
+  "commit": "c455f466f7df9c23724ba291aa9f2463ca553aaa",
+  "generation": "Actions only",
+  "patches": [
+    "Expose protected renderer extension points",
+    "Lit file-sphere material",
+    "Semantic aura uniform",
+    "Preserve camera during resize",
+    "Dispose all original scene resources",
+    "Route original native registration to customized view/settings"
+  ]
+}
