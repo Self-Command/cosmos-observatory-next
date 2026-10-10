@@ -1,0 +1,11 @@
+import {test,expect} from '@playwright/test';
+import {writeFile} from 'node:fs/promises';
+test.use({video:'off'});
+test('Keyboard select and wrapped configuration fields stay reachable in the view',async({page},info)=>{
+  test.setTimeout(90000);await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();await page.evaluate(async()=>{await (window as any).fixture.updateSettings({animationPaused:true,patrolPaused:true});});
+  const records=[];const probe=async(name:string)=>{records.push(await page.evaluate(name=>{const shadow=document.querySelector('#app')!.shadowRoot!;return {name,active:shadow.activeElement?.outerHTML.slice(0,500),popup:shadow.querySelector('[data-slot=select-content]')?.outerHTML.slice(0,500),fields:Array.from(shadow.querySelectorAll('.settings-groups,.settings-tabs,.settings-fields,.settings-fields button')).map(element=>({text:element.textContent?.slice(0,35),rect:element.getBoundingClientRect().toJSON(),display:getComputedStyle(element).display,pointer:getComputedStyle(element).pointerEvents}))};},name));console.log('UI-FOCUS',JSON.stringify(records.at(-1)));};
+  try{
+    await page.getByRole('navigation',{name:'观测入口'}).getByRole('button',{name:'检查',exact:true}).click();await page.getByRole('combobox',{name:'检查状态',exact:true}).click();await probe('select-open');await page.keyboard.press('End');await expect(page.getByRole('option',{name:'失败',exact:true})).toBeFocused();await probe('select-end');await page.keyboard.press('Enter');await expect(page.getByRole('listbox')).toHaveCount(0);await page.keyboard.press('Escape');
+    await page.getByRole('button',{name:'打开设置',exact:true}).click();await page.getByRole('tab',{name:'导入导出',exact:true}).click();await probe('configuration-before-click');await page.screenshot({path:info.outputPath('configuration-before-click.png')});await page.getByRole('button',{name:'生成配置文本',exact:true}).click({timeout:10000});await expect(page.getByRole('textbox',{name:'配置 JSON',exact:true})).toHaveValue(/"version": 2/);await probe('configuration-generated');await page.screenshot({path:info.outputPath('configuration-generated.png')});
+  }finally{await probe('final');await writeFile(info.outputPath('ui-focus.json'),JSON.stringify(records,null,2));}
+});

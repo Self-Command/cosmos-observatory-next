@@ -38,7 +38,7 @@ export class WorldScene extends SphericalGraph {
   private tooltip:HTMLDivElement;private matrix=new THREE.Matrix4();private point=new THREE.Vector3();private scaleVector=new THREE.Vector3();private identityQuaternion=new THREE.Quaternion();
   private spider:THREE.Object3D|undefined;private mixer:THREE.AnimationMixer|undefined;private spiderClips=new Map<string,THREE.AnimationAction>();private spiderAction='';private spiderTarget:string|undefined;private spiderRoute:string[]=[];private spiderTask:string|undefined;
   constructor(canvas:HTMLCanvasElement,settings:Settings,spiderURL:string,private callbacks:SceneCallbacks){
-    super(canvas);this.settings=settings;cancelAnimationFrame(this.animationFrame);this.root.visible=false;this.root.rotation.set(0,0,0);this.camera.far=500;this.camera.updateProjectionMatrix();this.glowMaterial.map=this.glowTexture;this.renderer.info.autoReset=false;
+    canvas.getContext('webgl2',{alpha:false,antialias:true,powerPreference:'high-performance'});super(canvas);this.settings=settings;cancelAnimationFrame(this.animationFrame);this.root.visible=false;this.root.rotation.set(0,0,0);this.camera.far=500;this.camera.updateProjectionMatrix();this.glowMaterial.map=this.glowTexture;this.renderer.info.autoReset=false;
     this.orbit=new OrbitControls(this.camera,canvas);this.orbit.enableDamping=true;this.orbit.minDistance=2;this.orbit.maxDistance=150;
     this.transform=new TransformControls(this.camera,canvas);this.transform.setSize(.8);this.scene.add(this.transform.getHelper(),this.dragProxy);this.dragProxy.visible=false;
     this.drag=new DragControls([this.dragProxy],this.camera,canvas);this.drag.enabled=false;
