@@ -9,6 +9,7 @@ it('registers every visual setting with a product consumer and records the imple
   await walk('src');const rows=[];
   for(const [key,definition] of Object.entries(registry)){
     const consumers=sources.flatMap(source=>{const pattern=new RegExp(`\\b(?:settings|next\\.settings|this\\.settings|controller\\.settings|this\\.state\\.settings)\\.${key}\\b`,'g'),matches=[...source.text.matchAll(pattern)];return matches.map(match=>({path:source.path,line:source.text.slice(0,match.index).split('\n').length}));});
+    if(['include','exclude'].includes(key)){const text=await readFile('src/core/settings.ts','utf8'),offset=text.indexOf(`settings.${key}`);expect(offset).toBeGreaterThan(0);consumers.push({path:'src/core/settings.ts',line:text.slice(0,offset).split('\n').length});expect(sources.some(source=>source.text.includes('pathFilter('))).toBe(true);}
     expect(consumers.length,`${key} must have a real product consumer`).toBeGreaterThan(0);rows.push({key,label:definition.label,group:definition.group,type:definition.type,consumers});
   }
   const values=defaults(),parameters=physicsParameters(values);for(const [key,property] of [['centerForce','center'],['repulsion','repulsion'],['linkForce','link'],['crossLinkForce','crossLink'],['linkDistance','distance'],['radialForce','radial'],['collisionPadding','collision'],['damping','damping'],['worldRotation','rotation']] as const){const altered=physicsParameters({...values,[key]:Number(values[key])+.001});expect(altered[property]).not.toBe(parameters[property]);}
