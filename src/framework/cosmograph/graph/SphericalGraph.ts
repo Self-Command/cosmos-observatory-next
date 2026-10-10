@@ -2631,6 +2631,7 @@ export class SphericalGraph {
     this.glowTexture.dispose();
     this.nodeMarkerTexture.dispose();
     this.cosmicBackgroundTexture?.dispose();
+    this.bloomPass.dispose();
     this.composer.dispose();
     this.scene.traverse(object => {
       const mesh = object as THREE.Mesh;

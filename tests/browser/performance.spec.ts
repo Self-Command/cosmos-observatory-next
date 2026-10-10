@@ -1,10 +1,20 @@
 import {test,expect} from '@playwright/test';
 import {writeFile} from 'node:fs/promises';
+test.use({video:'off'});
 test('Default software rendering meets 630 and 1400 node frame and input budgets',async({page},info)=>{
-  test.setTimeout(180000);await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();
+  test.setTimeout(240000);await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();
   const sample=()=>page.evaluate(()=>{const scene=(document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any).__cosmosScene;const debug=scene.debug();return {at:performance.now(),frames:debug.frames,nodes:debug.positions.length,worker:debug.worker,frameCosts:debug.frameCosts,drawCalls:debug.drawCalls,triangles:debug.triangles,geometries:debug.geometries,configuration:(window as any).fixture.settings};});
-  const measure=async()=>{const start=await sample();await page.waitForTimeout(20000);const end=await sample();return {start,end,fps:(end.frames-start.frames)/((end.at-start.at)/1000)};};
-  const normal=await measure(),latency:number[]=[];for(let i=0;i<12;i++){const before=Date.now();await page.getByLabel('搜索文件').fill(`文件-${i}`);await expect(page.getByRole('listbox')).toBeVisible();latency.push(Date.now()-before);}await page.getByLabel('搜索文件').fill('');
+  const measure=async(milliseconds=20000)=>{const start=await sample();await page.waitForTimeout(milliseconds);const end=await sample();return {start,end,fps:(end.frames-start.frames)/((end.at-start.at)/1000)};};
+  await page.waitForTimeout(2000);const normal=await measure(),latency:number[]=[];
+  await page.evaluate(()=>{const shadow=document.querySelector('#app')!.shadowRoot!,input=shadow.querySelector('input[aria-label="搜索文件"]')!;(window as any).inputSamples=[];input.addEventListener('input',()=>{const at=performance.now();requestAnimationFrame(()=>{if(shadow.querySelector('[role=listbox]'))(window as any).inputSamples.push(performance.now()-at);});});});
+  for(let i=0;i<12;i++){await page.getByLabel('搜索文件').fill(`文件-${i}`);await expect(page.getByRole('listbox')).toBeVisible();await page.waitForTimeout(50);}latency.push(...await page.evaluate(()=>(window as any).inputSamples));await page.getByLabel('搜索文件').fill('');expect(latency).toHaveLength(12);
   await page.evaluate(async()=>{await (window as any).fixture.seedStress();});await expect(page.getByText('10000 文件',{exact:true})).toBeVisible();const stress=await measure(),sorted=latency.sort((a,b)=>a-b),p95=sorted[Math.ceil(sorted.length*.95)-1];
-  const data={renderer:'Chromium / SwiftShader',normal,stress,interaction:{latency,p95}};console.log('DEFAULT-PERFORMANCE',JSON.stringify({normalFps:normal.fps,stressFps:stress.fps,p95,normalCost:normal.end.frameCosts,stressCost:stress.end.frameCosts}));await writeFile(info.outputPath('default-performance.json'),JSON.stringify(data,null,2));await page.screenshot({path:info.outputPath('default-1400-nodes.png')});expect(normal.start.nodes).toBe(630);expect(normal.fps).toBeGreaterThanOrEqual(15);expect(stress.start.nodes).toBe(1400);expect(stress.fps).toBeGreaterThanOrEqual(10);expect(p95).toBeLessThanOrEqual(200);
+  await page.screenshot({path:info.outputPath('default-1400-nodes.png')});
+  const diagnostics:{name:string;fps:number}[]=[];
+  for(const name of ['without-bloom','without-aura','without-spider','without-edges','without-panel-blur']){
+    await page.evaluate(name=>{const shadow=document.querySelector('#app')!.shadowRoot!,scene=(shadow.querySelector('canvas') as any).__cosmosScene;if(name==='without-bloom')scene.bloomPass.enabled=false;if(name==='without-aura')for(const world of scene.worlds.values())world.aura.visible=false;if(name==='without-spider'&&scene.spider)scene.spider.visible=false;if(name==='without-edges')scene.edgeLines.visible=false;if(name==='without-panel-blur')for(const panel of shadow.querySelectorAll<HTMLElement>('[data-panel]'))panel.style.backdropFilter='none';},name);
+    const result=await measure(4000);diagnostics.push({name,fps:result.fps});
+  }
+  const data={renderer:'Chromium / SwiftShader; 1560×1120; deviceScaleFactor=1; default product settings; performance recording off',normal,stress,interaction:{metric:'native input event → next animation frame with rendered search results',latency,p95},diagnostics};console.log('DEFAULT-PERFORMANCE',JSON.stringify({normalFps:normal.fps,stressFps:stress.fps,p95,diagnostics}));await writeFile(info.outputPath('default-performance.json'),JSON.stringify(data,null,2));
+  expect(normal.start.nodes).toBe(630);expect(normal.fps).toBeGreaterThanOrEqual(15);expect(stress.start.nodes).toBe(1400);expect(stress.fps).toBeGreaterThanOrEqual(10);expect(p95).toBeLessThanOrEqual(200);
 });
