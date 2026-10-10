@@ -3,10 +3,15 @@ import {writeFile} from 'node:fs/promises';
 test.use({video:'off'});
 test('Isolate current compositor, effect, geometry and empty framebuffer with fresh contexts @diagnostic',async({browser},info)=>{
   test.setTimeout(300000);const records=[];
-  for(const name of ['product','no-bloom','no-background','no-background-or-bloom','no-aura','no-dom']){
+  for(const name of ['product','no-core','no-glow','no-edges','no-spider','no-bloom','no-dom']){
     const context=await browser.newContext({viewport:{width:1560,height:1120}});
     const page=await context.newPage();await page.goto('http://127.0.0.1:4173/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();await page.waitForFunction(()=>!!(document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any).__cosmosScene?.debug().spiderLoaded);
+    await page.evaluate(async()=>{await (window as any).fixture.seedStress();});
     await page.evaluate(name=>{const shadow=document.querySelector('#app')!.shadowRoot!,scene=(shadow.querySelector('canvas') as any).__cosmosScene;
+      if(name==='no-core')scene.coreBatch.visible=false;
+      if(name==='no-glow')scene.glowBatch.visible=false;
+      if(name==='no-edges')scene.edgeLines.visible=false;
+      if(name==='no-spider')scene.spider.visible=false;
       if(name==='no-bloom'||name==='no-background-or-bloom')scene.bloomPass.enabled=false;
       if(name.startsWith('no-background'))scene.settings={...scene.settings,background:false};
       if(name==='no-aura')scene.auraBatch.visible=false;
