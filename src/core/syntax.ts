@@ -1,6 +1,7 @@
 import { parse } from '@babel/parser';
 import { parseDocument } from 'yaml';
 import type { FileDescriptor, Issue } from './types';
+export const supportsSyntax=(extension:string)=>['js','cjs','mjs','ts','tsx','jsx','json','yaml','yml','md'].includes(extension);
 export function inspectSyntax(file:FileDescriptor,text:string){
   const issues:Issue[]=[],rules:string[]=[],unassessed:string[]=[],dependencies:string[]=[];
   const check=(rule:string,fn:()=>void)=>{rules.push(rule);try{fn();}catch(error){const e=error as {message?:string;loc?:{line:number}};issues.push({rule,message:e.message??String(error),line:e.loc?.line});}};

@@ -13,12 +13,21 @@ export const registry = {
   fov:n('镜头与性能','视野',42,20,90), cameraDistance:n('镜头与性能','初始镜头距离',33,8,100), sensitivity:n('镜头与性能','操作灵敏度',.75,.1,3,.05), fps:n('镜头与性能','帧率上限',40,10,60), pixelRatio:n('镜头与性能','像素比上限',1.5,.5,2.5,.1), reducedMotion:b('镜头与性能','减少动画',false), animationPaused:b('镜头与性能','暂停动态',false),
   patrolEnabled:b('蜘蛛与巡查','开启巡查',true), patrolPaused:b('蜘蛛与巡查','暂停巡查',false), patrolInterval:n('蜘蛛与巡查','调度间隔（秒）',1.5,.2,60,.1), revisitSeconds:n('蜘蛛与巡查','同版本复查间隔（秒）',30,1,3600), maxReadKiB:n('蜘蛛与巡查','读取上限（KiB）',1024,4,32768,4), spiderSize:n('蜘蛛与巡查','蜘蛛屏幕尺寸（像素）',96,32,240,4), spiderSpeed:n('蜘蛛与巡查','定位速度',4,.2,20,.2), spiderColor:{...s('蜘蛛与巡查','蜘蛛颜色','#A8E6E3'),type:'color'} as SettingDefinition,
   debounceMs:n('仓库监听','变化合并（毫秒）',1000,100,5000,100), maxWaitMs:n('仓库监听','最大等待（毫秒）',5000,1000,30000,500), include:s('仓库监听','包含前缀（逗号分隔；空为全部）',''), exclude:s('仓库监听','排除前缀（逗号分隔）','.git,.obsidian,.trash'), observePlugins:b('仓库监听','观察插件清单',true),
-  schemaPath:s('模型与扩展','Schema 路径','宇宙/演化/脚本/lib/system-schema.json'), enginePath:s('模型与扩展','Engine 路径','宇宙/演化/脚本/lib/system-engine.cjs'), templates:s('模型与扩展','模板目录标识','模板,templates'), scripts:s('模型与扩展','脚本目录标识','脚本,scripts'), extensionPollSeconds:n('模型与扩展','插件清单复查（秒）',30,5,300,5),
+  schemaPath:s('模型与扩展','Schema 路径','宇宙/演化/脚本/lib/system-schema.json'), enginePath:s('模型与扩展','Engine 路径','宇宙/演化/脚本/lib/system-engine.cjs'), publicationEvidencePath:s('模型与扩展','上线核验记录 JSON 路径（空为未评估）',''), templates:s('模型与扩展','模板目录标识','模板,templates'), scripts:s('模型与扩展','脚本目录标识','脚本,scripts'), extensionPollSeconds:n('模型与扩展','插件清单复查（秒）',30,5,300,5),
   panelMinWidth:n('面板','最小宽度',170,140,600,10), panelMinHeight:n('面板','最小高度',100,100,600,10), panelsLocked:b('面板','锁定全部面板',false), panelHeight:n('面板','默认高度',142,100,400), panelMargin:n('面板','画布边距',28,8,80), panelGap:n('面板','面板间距',8,2,40), logLimit:n('面板','可见事件数量',200,20,2000,20), heatMinutes:n('面板','热图窗口（分钟）',60,5,1440,5), heatBins:n('面板','热图列数',17,6,60), panelOpacity:n('主题','面板不透明度',1,.2,1,.01), panelRadius:n('主题','面板圆角',6,0,24), fontSize:n('主题','字号',12,10,20),
-  receiverEnabled:b('来源与历史','开启本地来源接收',false), receiverPort:n('来源与历史','接收端口',27148,1024,65535), receiverRate:n('来源与历史','每分钟来源事件上限',120,10,10000,10), eventLimit:n('来源与历史','事件记录上限',5000,100,20000,100), retentionDays:n('来源与历史','历史保留天数',14,1,365), historyMiB:n('来源与历史','总历史容量（MiB）',100,5,1024,5), logCapacityMiB:n('来源与历史','日志容量（MiB；最多总容量的20%）',5,1,128), logFileKiB:n('来源与历史','日志单文件上限（KiB）',256,64,2048,64), snapshotSeconds:n('来源与历史','快照间隔（秒）',30,5,300,5), timezone:s('来源与历史','时区','Asia/Shanghai')
+  receiverEnabled:b('来源与历史','开启本地来源接收',false), receiverPort:n('来源与历史','接收端口',27148,1024,65535), receiverRate:n('来源与历史','每分钟来源事件上限',120,10,10000,10), sourceTimeoutSeconds:n('来源与历史','来源静默提示（秒）',120,10,3600,10), eventLimit:n('来源与历史','事件记录上限',5000,100,20000,100), retentionDays:n('来源与历史','历史保留天数',14,1,365), historyMiB:n('来源与历史','总历史容量（MiB）',100,5,1024,5), logCapacityMiB:n('来源与历史','日志容量（MiB；最多总容量的20%）',5,1,128), logFileKiB:n('来源与历史','日志单文件上限（KiB）',256,64,2048,64), snapshotSeconds:n('来源与历史','快照间隔（秒）',30,5,300,5), timezone:s('来源与历史','时区','Asia/Shanghai')
 } satisfies Record<string, SettingDefinition>;
 export type Settings = Record<keyof typeof registry, SettingValue>;
 export const defaults=():Settings=>Object.fromEntries(Object.entries(registry).map(([key,def])=>[key,def.default])) as Settings;
+export function assertSettings(input:Record<string,unknown>){
+  for(const [key,value] of Object.entries(input)){
+    const def=(registry as Record<string,SettingDefinition>)[key];if(!def)throw Error(`未知设置: ${key}`);
+    if(def.type==='number'&&(typeof value!=='number'||!Number.isFinite(value)||value<def.min!||value>def.max!))throw Error(`${def.label} 超出范围`);
+    if(def.type==='boolean'&&typeof value!=='boolean')throw Error(`${def.label} 必须为布尔值`);
+    if(['string','color','select'].includes(def.type)&&(typeof value!=='string'||value.length>4096||(def.options&&!def.options.includes(value))||(def.type==='color'&&!/^#[0-9a-f]{6}$/i.test(value))))throw Error(`${def.label} 无效`);
+  }
+  if(input.timezone!==undefined){try{new Intl.DateTimeFormat('zh-CN',{timeZone:String(input.timezone)});}catch{throw Error('时区无效');}}
+}
 export function validateSettings(input:Record<string,unknown>):Settings {
   const output=defaults();
   for(const [key,def] of Object.entries(registry)){
