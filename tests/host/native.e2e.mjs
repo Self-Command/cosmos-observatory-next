@@ -68,4 +68,21 @@ describe('Real Obsidian native plugin',()=>{
     await browser.executeObsidian(async({app})=>{await app.plugins.enablePlugin('cosmos-observatory-next');});await browser.waitUntil(async()=>browser.executeObsidian(({app})=>app.plugins.plugins['cosmos-observatory-next']?.coordinator?.snapshot.files.some(file=>file.path==='地球/no-view-lifecycle.js')),{timeout:60000});
     const recovered=await browser.executeObsidian(({app})=>({fresh:app.plugins.plugins['cosmos-observatory-next'].coordinator!==window.lifecycleCoordinator,events:app.plugins.plugins['cosmos-observatory-next'].coordinator.snapshot.events.filter(event=>event.path==='地球/no-view-lifecycle.js'&&event.action==='create').length}));assert.equal(recovered.fresh,true);assert.equal(recovered.events,1);await writeFile('test-results/host/lifecycle-assets.json',JSON.stringify({assets,lifecycle,recovered,businessBytesUnchanged:true},null,2));
   });
+  it('keeps native panel pixels opaque over an alternating underlay with live rendering',async()=>{
+    await browser.executeObsidianCommand('cosmos-observatory-next:open-3d-knowledge-graph');
+    await browser.waitUntil(async()=>browser.executeObsidian(()=>document.querySelector('.cosmos-shadow-host')?.shadowRoot?.querySelectorAll('[data-panel]').length===6),{timeout:30000});
+    const puppeteer=await browser.getPuppeteer(),pages=await puppeteer.pages(),page=pages.find(page=>page.url().startsWith('app://'))??pages[0],records=[];
+    await browser.executeObsidian(async({app})=>{await app.plugins.plugins['cosmos-observatory-next'].coordinator.updateSettings({animationPaused:false,patrolPaused:false});const root=document.querySelector('.cosmos-shadow-host').shadowRoot.querySelector('.cosmos-root'),underlay=document.createElement('div');underlay.className='native-surface-underlay';underlay.style.cssText='position:absolute;inset:0;z-index:11;pointer-events:none';root.append(underlay);});
+    for(const depth of [.2,1]){
+      await browser.executeObsidian(async({app},depth)=>{await app.plugins.plugins['cosmos-observatory-next'].coordinator.updateSettings({panelOpacity:depth});},depth);
+      for(let frame=0;frame<4;frame++){
+        await browser.executeObsidian((_,frame)=>{document.querySelector('.cosmos-shadow-host').shadowRoot.querySelector('.native-surface-underlay').style.background=frame%2?'#00fc00':'#fc00fc';},frame);await browser.pause(150);
+        const png=await page.screenshot({type:'png'});await writeFile(`test-results/host/native-panel-${depth}-${frame}.png`,png);
+        const pixels=await page.evaluate(async encoded=>{const image=new Image();image.src=`data:image/png;base64,${encoded}`;await image.decode();const buffer=document.createElement('canvas');buffer.width=image.width;buffer.height=image.height;const context=buffer.getContext('2d');context.drawImage(image,0,0);const scale=image.width/innerWidth;return [...document.querySelector('.cosmos-shadow-host').shadowRoot.querySelectorAll('[data-panel]')].map(panel=>{const rect=panel.getBoundingClientRect(),style=getComputedStyle(panel),rgb=style.backgroundColor.match(/[\d.]+/g).slice(0,3).map(Number),data=context.getImageData(Math.ceil((rect.left+4)*scale),Math.ceil((rect.top+44)*scale),Math.max(1,Math.floor(3*scale)),Math.max(1,Math.floor(20*scale))).data;let deviation=0;for(let i=0;i<data.length;i+=4)for(let channel=0;channel<3;channel++)deviation=Math.max(deviation,Math.abs(data[i+channel]-rgb[channel]));return {id:panel.dataset.panel,deviation,background:style.backgroundColor,backdrop:style.backdropFilter,opacity:style.opacity};});},Buffer.from(png).toString('base64'));
+        for(const sample of pixels){assert.ok(sample.deviation<=1,JSON.stringify(sample));assert.match(sample.background,/^rgb\(/);assert.equal(sample.backdrop,'none');assert.equal(sample.opacity,'1');}records.push({depth,frame,pixels});
+      }
+    }
+    await browser.executeObsidian(async({app})=>{document.querySelector('.cosmos-shadow-host').shadowRoot.querySelector('.native-surface-underlay').remove();await app.plugins.plugins['cosmos-observatory-next'].coordinator.updateSettings({panelOpacity:1});for(const leaf of app.workspace.getLeavesOfType('cosmos-observatory-next-view'))leaf.detach();});
+    await writeFile('test-results/host/native-panel-pixels.json',JSON.stringify({platform:process.platform,records},null,2));
+  });
 });
