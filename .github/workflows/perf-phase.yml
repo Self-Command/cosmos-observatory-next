@@ -14,6 +14,10 @@ on:
         type: choice
         default: ubuntu-latest
         options: [ubuntu-latest, ubuntu-24.04-arm]
+      driver:
+        type: choice
+        default: swiftshader
+        options: [swiftshader, llvmpipe]
 permissions:
   contents: read
 concurrency:
@@ -32,15 +36,25 @@ jobs:
       - run: npm run check
       - run: npm run build
       - run: npx playwright install --with-deps chromium
+      - name: Install Mesa software display
+        if: inputs.driver == 'llvmpipe'
+        run: sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libegl1 mesa-utils
       - run: |
-          if [ "$DIAGNOSTIC" = trace ]; then
+          if [ "$SOFTWARE_GL" = llvmpipe ]; then
+            xvfb-run -a --server-args="-screen 0 1600x1200x24" npm run browser -- tests/browser/performance.spec.ts tests/browser/sphere-detail.spec.ts
+          elif [ "$DIAGNOSTIC" = trace ]; then
             npm run browser -- tests/browser/render-diagnosis.spec.ts --grep 'Trace software'
           elif [ "$DIAGNOSTIC" = completed ]; then
             npm run browser -- tests/browser/render-diagnosis.spec.ts --grep 'Measure completed'
           else
             npm run browser -- tests/browser/${{ inputs.spec || 'performance' }}.spec.ts
           fi
-        env: {DIAGNOSTIC: '${{ inputs.diagnostic || ''all'' }}'}
+        env:
+          DIAGNOSTIC: '${{ inputs.diagnostic || ''all'' }}'
+          SOFTWARE_GL: '${{ inputs.driver || ''swiftshader'' }}'
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          GALLIUM_DRIVER: llvmpipe
+          LP_NUM_THREADS: '3'
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with: {name: default-performance, path: test-results/, retention-days: 2}
