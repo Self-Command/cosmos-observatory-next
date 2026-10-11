@@ -14,6 +14,14 @@ test('Isolate stress rendering costs in the same warmed context @diagnostic',asy
   await writeFile(info.outputPath('render-diagnosis.json'),JSON.stringify(records,null,2));
 });
 
+test('Trace software rendering and compositor work @diagnostic',async({page,browser},info)=>{
+  test.setTimeout(120000);await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();await page.evaluate(async()=>{await (window as any).fixture.seedStress();});await page.waitForTimeout(10000);
+  const cdp=await browser.newBrowserCDPSession(),before=await cdp.send('SystemInfo.getProcessInfo'),events:any[]=[];cdp.on('Tracing.dataCollected',event=>events.push(...event.value));
+  await cdp.send('Tracing.start',{categories:'gpu,cc,viz,renderer,blink,disabled-by-default-gpu.service',transferMode:'ReportEvents'});await page.waitForTimeout(6000);const complete=new Promise<void>(resolve=>cdp.once('Tracing.tracingComplete',()=>resolve()));await cdp.send('Tracing.end');await complete;const after=await cdp.send('SystemInfo.getProcessInfo');
+  const groups=new Map<string,{duration:number;count:number;max:number}>();for(const event of events)if(event.ph==='X'&&event.dur>0&&event.dur<6000000){const key=`${event.pid}:${event.tid} ${event.name}`,group=groups.get(key)??{duration:0,count:0,max:0};group.duration+=event.dur/1000;group.count++;group.max=Math.max(group.max,event.dur/1000);groups.set(key,group);}
+  const top=[...groups].map(([name,group])=>({name,...group})).sort((a,b)=>b.duration-a.duration).slice(0,40),cpu=after.processInfo.map(process=>({type:process.type,id:process.id,cpuSeconds:process.cpuTime-(before.processInfo.find(old=>old.id===process.id)?.cpuTime??process.cpuTime)}));console.log('GPU-TRACE-TOP',JSON.stringify({top,cpu}));await writeFile(info.outputPath('software-render-trace.json'),JSON.stringify({traceEvents:events}));await cdp.detach();
+});
+
 test('Measure completed GPU work per visible draw @diagnostic',async({page},info)=>{
   test.setTimeout(120000);await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();await page.evaluate(async()=>{await (window as any).fixture.seedStress();});await page.waitForTimeout(10000);
   const measurements=await page.evaluate(async()=>{
