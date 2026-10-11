@@ -11,3 +11,13 @@ test('Sphere detail preserves every visible file and restores a smooth selected 
   await expect.poll(async()=>{const value=await probe();return value.selected;}).toBe(true);const selected=await probe();expect(selected.near+selected.distant).toBe(630);expect(selected.meshes[0].segments).toBeGreaterThan(selected.meshes[1].segments);expect(selected.failed).toBe(false);
   await page.screenshot({path:info.outputPath('selected-sphere-detail.png')});await writeFile(info.outputPath('sphere-detail.json'),JSON.stringify({before,selected},null,2));
 });
+
+test('Root-only and empty file scopes keep a valid renderer and usable file list',async({page})=>{
+  await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();
+  await page.evaluate(async()=>{const fixture=(window as any).fixture;await fixture.addFile('根范围.md','# synthetic root');await fixture.updateSettings({include:'根范围.md'});});
+  await expect(page.getByText('1 文件',{exact:true})).toBeVisible();
+  const state=()=>page.evaluate(()=>{const scene=(document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any).__cosmosScene;return {frames:scene.debug().frames,failed:scene.debug().renderFailed,files:scene.debug().positions.length};});
+  await expect.poll(async()=>{const value=await state();return value.frames;}).toBeGreaterThan(0);expect(await state()).toMatchObject({failed:false,files:0});
+  await page.getByRole('button',{name:'文件列表',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('根范围.md');await page.keyboard.press('Escape');
+  await page.evaluate(async()=>{await (window as any).fixture.updateSettings({include:'空范围没有文件'});});await expect(page.getByText('0 文件',{exact:true})).toBeVisible();expect(await state()).toMatchObject({failed:false,files:0});
+});
