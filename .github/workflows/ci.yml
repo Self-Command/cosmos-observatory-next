@@ -124,6 +124,9 @@ jobs:
           name: mouse-video-review
           path: 'test-results/video-review/'
           retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with: {name: browser-panel-pixels, path: 'test-results/**/panel-surface-pixels.json', retention-days: 14, if-no-files-found: error}
   host:
     needs: quality-build
     timeout-minutes: 30
@@ -166,6 +169,13 @@ jobs:
           name: host-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.profile }}
           path: test-results/host/
           retention-days: 2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always() && matrix.profile != 'stress'
+        with:
+          name: host-panel-pixels-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.profile }}
+          path: test-results/host/native-panel-pixels.json
+          retention-days: 14
+          if-no-files-found: error
   performance:
     needs: quality-build
     runs-on: ubuntu-latest
@@ -235,6 +245,10 @@ jobs:
         with: {name: immutable-build, path: dist/}
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with: {name: software-rendering-evidence, path: dist/verification/}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with: {name: browser-panel-pixels, path: dist/panel-verification/browser/}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with: {pattern: 'host-panel-pixels-*', path: dist/panel-verification/native/}
       - run: npm run package
         env: {VERIFICATION_GATE: passed}
       - run: python scripts/verify-package.py
@@ -248,4 +262,5 @@ jobs:
             dist/FILE-SHA256SUMS
             dist/CANDIDATE-VERIFICATION.json
             dist/PERFORMANCE-VERIFICATION.json
+            dist/PANEL-VERIFICATION.json
           retention-days: 14

@@ -21,6 +21,10 @@ with zipfile.ZipFile(package) as archive:
     assert build['run'] == candidate['run']
     assert candidate['verificationGate'] == 'passed'
     assert 'software-rendering' in candidate['required']
+    assert 'captured panel pixels' in candidate['required']
+    panels = json.loads(archive.read('PANEL-VERIFICATION.json'))
+    assert panels['commit'] == build['commit'] and panels['run'] == build['run']
+    assert len(panels['browser']) == 2 and len(panels['native']) == 4
     performance = json.loads(archive.read('PERFORMANCE-VERIFICATION.json'))
     assert performance['provenance']['commit'] == build['commit']
     assert performance['provenance']['run'] == os.environ['GITHUB_RUN_ID']

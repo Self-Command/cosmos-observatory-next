@@ -63,7 +63,7 @@ async function exercise(page:Page,info:TestInfo,peer:boolean){
   const start=(await title.boundingBox())!;await page.mouse.move(start.x+70,start.y+18);await page.mouse.down();await page.mouse.move(start.x+130,start.y+60,{steps:12});await page.mouse.up();
   const grip=(await panel.locator('..').locator('.panel-resize-bottomRight').boundingBox())!;await page.mouse.move(grip.x+6,grip.y+6);await page.mouse.down();await page.mouse.move(grip.x+46,grip.y+26,{steps:10});await page.mouse.up();await page.mouse.move(700,500);
   const moved=await pixels(page,info,'after-drag-and-resize');for(const value of moved)expect(value.deviation,JSON.stringify(value)).toBeLessThanOrEqual(1);
-  await writeFile(info.outputPath('panel-surface-pixels.json'),JSON.stringify({dpr:await page.evaluate(()=>devicePixelRatio),peer,count,frames:after-before,negativeControl:negative,records,moved},null,2));
+  await writeFile(info.outputPath('panel-surface-pixels.json'),JSON.stringify({provenance:{commit:process.env.GITHUB_SHA,run:process.env.GITHUB_RUN_ID},dpr:await page.evaluate(()=>devicePixelRatio),peer,count,frames:after-before,negativeControl:negative,records,moved},null,2));
 }
 test('Opaque panel pixels stay fixed while the graph, events and underlay change',async({page},info)=>{await exercise(page,info,false);});
 test.describe('Two simultaneous views at high DPI',()=>{

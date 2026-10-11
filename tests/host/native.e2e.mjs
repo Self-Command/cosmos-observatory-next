@@ -83,6 +83,6 @@ describe('Real Obsidian native plugin',()=>{
       }
     }
     await browser.executeObsidian(async({app})=>{document.querySelector('.cosmos-shadow-host').shadowRoot.querySelector('.native-surface-underlay').remove();await app.plugins.plugins['cosmos-observatory-next'].coordinator.updateSettings({panelOpacity:1});for(const leaf of app.workspace.getLeavesOfType('cosmos-observatory-next-view'))leaf.detach();});
-    await writeFile('test-results/host/native-panel-pixels.json',JSON.stringify({platform:process.platform,records},null,2));
+    await writeFile('test-results/host/native-panel-pixels.json',JSON.stringify({provenance:{commit:process.env.GITHUB_SHA,run:process.env.GITHUB_RUN_ID},platform:process.platform,version:process.env.OBSIDIAN_VERSION,profile:process.env.HOST_PROFILE,records},null,2));
   });
 });
