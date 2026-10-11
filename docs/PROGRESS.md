@@ -1,59 +1,31 @@
-# 执行状态与审阅交付
+# 最终候选验收记录
 
-更新时间：2026-10-10。公开仓库：Self-Command/cosmos-observatory-next。工作区：宇宙观测台-next；旧资料处理已移出范围。
+更新时间：2026-10-11。公开开发仓库为 Self-Command/cosmos-observatory-next；新工作区为宇宙观测台-next。
 
-当前状态：用户批准的“全部缺项补齐与复检”已推进到 P3/P4。P1 数据及恢复、P2 物理与实例化、P3 明细入口和自适应面板已有实现；类型、来源检查及 55 项单元测试通过。完整交互、默认性能、最终复检与候选打包仍在执行，需求闭环尚未完成。旧审阅包只作基线；真实库安装、真实来源接入与公开发布留在最终候选审阅后。
+本记录随安装候选交付。50 项必需需求的实现、入口和验证路径已登记在 COMPLETION-MATRIX.md，修复闭环见 FIX-REVIEW.md。构建前的仓库文本属于待核验记录；只有同包 CANDIDATE-VERIFICATION.json 的 verificationGate=passed、源码提交相符且完整校验通过时，候选验收结论才生效。失败运行不会生成安装候选。
 
+## 实现与验证
 
-本轮最新验证实现提交 `cf4435903d1adfdf13884a3d643eafec3f3a8cad`：[完整 Actions 38051744288](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38051744288)、[交互迭代 38051842032](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38051842032)。正在验证，不作为通过证据。
-
-已复测定位并修复的原因：新建文件被缓存就绪任务排队淹没；默认设置增长使小容量恢复副本超限；保存状态未更新外部订阅的快照对象；SVG 文字和底板整体拉伸；窄窗最大化覆盖用户原始布局；节点优先级改变了可见数组顺序；每次刷新重复归一化造成坐标精度漂移；面板初始化成功覆盖 WebGL 错误。原问题和关联流程仍需在最终提交完整验证。
-## 旧基线构建与校验（非最终候选）
-
-- 实现提交：`7d9470d6644d126cb76b6a72f3c471971614201f`。
-- [完整 Actions 运行 38038940851](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38038940851)。
-- ZIP SHA-256：`d60e69b009b2b3ac308bdaa1f466ae3d677b76b202aa4a48542cd1bb31c5b009`。
-- 依赖锁 SHA-256：`11df38718c89838e6593f3e7f4776dad1211ec2dc203778ff1d785db140752ff`。
-- 原 SVG SHA-256 保持 `0869ac88be4692aa0568029ff9a8490e16e07a18d8e7eb9969c2ff26bba1bae2`。
-- 插件只编译一次；浏览器、各宿主和最终 ZIP 使用同一份构建，各下游先验证 integrity.json。
-
-本地完整产物保存在 `artifacts/ci-38038940851/`。其中 `package/` 含 ZIP、SHA256SUMS、integrity.json；`build/plugin/BUILD-INFO.json` 含提交和 Actions 来源；`browser/` 含原 SVG、默认视图、交互后视图和录像；`linux/` 含真实 Obsidian 截图、旋转录像和运行时；`combination/` 含六插件实际启用记录；`performance/` 与 `stress/` 含持续测试截图和采样 JSON。Actions 产物保留 2 天，本地副本已保存。
-
-## 实现与修复
-
-完整 CosmoGraph 原生注册、ItemView、vault graph reader、SphericalGraph 底座复用；React、官方 shadcn/ui 和 react-rnd 六面板；真实一级目录发现、SphereGeometry 文件节点和独立三轴布局；只读 v3 engine 与 18 类实体适配；Babel / YAML 实读巡查、真实 GLB 蜘蛛、扩展发现；鉴权事件接收和公开来源桥接；lowdb 历史、回放和图形设置。
-
-原 SVG 未改写。世界位置、轮廓半径、节点坐标、点径、透明度、辅助路径、轨道与配色直接解析原代码；面板底板、分隔线、标题和顶栏直接克隆原向量元素。原背景代码实际载入 Three 背景纹理，截图等待其载入完成。默认配色沿用 SVG，真实文件数、真实关系和检查结果来自当前模型。
-
-面板相邻缩放手柄曾重叠：库默认手柄延伸到面板外 10 像素，而默认间距为 8 像素。现将八个手柄收进各自面板；Actions 验证拖动命中、尺寸变化与镜头隔离。面板拖动使用现有 react-rnd，不新增手写拖动引擎。
-
-六插件组合曾因冷启动元数据缓存未就绪而失败。保留必须就绪的断言，并记录缺失缓存数量和运行参数；组合测试在 SwiftShader 中采用 350 节点预算、像素比 1、帧率上限 20，真实启用全部六插件后通过。该配置是组合测试条件，不能据此声称组合下默认预算已通过。
-
-## 最新验证
-
-| Actions 任务 | 结果及实际覆盖 |
+| 范围 | 实现及证据 |
 | --- | --- |
-| quality-build | 类型、lint、固定来源 / 隐私边界、17 项单元测试、构建成功 |
-| browser | 2 项集成测试成功：真实球几何和深度、独立整球移动与内部坐标、搜索打开、目录发现、错误及修复、底板基准尺寸、缩放、锁定、最大化恢复、隐藏恢复、焦点与镜头隔离 |
-| Windows 1.13.7 core | 实际 Obsidian 安装、模型就绪、蜘蛛、查错修复、改名与布局、回放和资源释放成功 |
-| Windows 1.14.4 core | 同上；世界与面板布局重开恢复成功 |
-| Linux 1.14.4 core | 同上；实际镜头旋转截图与 FFmpeg 宿主录像成功 |
-| Windows 1.14.4 combination | 固定清单中的 TaskNotes、Dataview、QuickAdd、Templater、AnyBlock、AutoMover 实际启用并通过核心测试 |
-| performance | Chromium / SwiftShader，10,000 文件、5,000 事件、603.073 秒；694 可见节点、401 次新增实查、几何数 2127 → 2130、无页面异常 |
-| Linux 1.14.4 stress | 实际 vault 10,471 文件、5,000 鉴权事件、602.848 秒；344 可见节点、384 次新增实查、几何数 1063 → 1080、无记录错误 |
-| gate | 所有必需任务成功；失败和意外跳过均不能通过 |
-| review-build | 校验后直接打包同一构建，成功 |
+| 数据与业务 | 真实目录及库根列表；附件、属性、方向及独立关系证据；增量 ID；18 类有效/无效实体、七天边界和发布核验；业务结果与实读版本分别保存 |
+| 模拟与鼠标 | d3-force-3d 统一 Worker；真实中心拖动保持局部坐标；普通节点受力、跨球响应、固定/解除、XYZ、悬停、双击、取消及高 DPI；同提交真实鼠标录像 |
+| 六面板与全部入口 | 正常 DOM 排版、六/三/二/一列、48 次八向缩放、最大化与恢复、独立锁定及持久化；全部六面板、五个顶部入口、搜索和明细可操作；滚动条隐藏而内容继续可滚动 |
+| 设置与弹层 | 94 个注册参数的真实控件、草稿提交、消费者审计、可观察效果及组恢复；原子配置导入/复制/文件导出；官方 Dialog、Sheet、Select、DropdownMenu、Tooltip 的当前视图隔离和键盘焦点 |
+| 来源与恢复 | 编译 CLI 的 Codex/Claude 多会话公开契约及鉴权回环集成；重复、乱序、缺口、失败/取消和读取范围；v1→v2、拒写、损坏与容量恢复；回放和后台实时记录分离 |
+| 生命周期与宿主 | Windows Obsidian 1.13.7/1.14.4、Linux 1.14.4、六插件组合；关闭视图继续巡查、无视图停止图形、重复双视图、卸载及重启；GPU、Worker、监听和业务字节核对 |
+| 软件性能 | 独立 Ubuntu 24.04 / Mesa llvmpipe CPU 作业，默认 630/1400 节点、1560×1120、录制关闭；15/10 FPS 和输入 p95≤200 ms；源码、运行、驱动、配置与成绩随包验证 |
+| 压力与耐久 | 默认 1400 节点预算、10k 文件、5k 事件、十分钟浏览器耐久和较长原生采样；帧率、Worker、内存、GPU、监听及数据变化 |
+| 视觉 | 95 张宽窄界面和 11 张图集；三宿主原生页面及设置页；四段鼠标录像的全部按时间采样；最后候选对应的截图/录像再审阅 |
 
-1.14.4 宿主记录的运行时：Electron 43.7.7、Chrome 150.0.7871.250、Node 24.21.0。基线流程和来源记录保留于仓库；最新证据以本轮提交为准。
+## 构建与交付证明
 
-## 已知限制与验收边界
+quality-build 只编译一次，下游功能、软件性能、宿主和耐久全部下载同一不可变构建并核对哈希。必需任务失败或意外跳过都会使 gate 失败。review-build 只在完整 gate 成功后打包，并再次核对性能报告的来源、节点数、真实软件驱动及三个门槛；ZIP 的每个文件都有 SHA-256。
 
-- 本轮自动化使用合成数据与 Actions 软件渲染。真实私人库、用户显卡和日常插件设置未测试；不承诺运行帧率。十分钟压力样本的浏览器平均约 2.3 帧/秒，原生宿主约 3.3 帧/秒。
-- 原生压力进程 JS 堆采样约 299 → 760 MiB，中间有回落；该流程验证持续运行、显示 / 事件预算与几何资源增长，尚不足以证明长期内存稳定。
-- 源码复用已验证，真实文件数量与内容会改变节点、连线、统计和空态。三维旋转和用户拖动也会改变投影；人工像素级视觉审阅尚未完成。
-- 面板自动测试直接覆盖右下角缩放及共同状态流程，其他七个手柄、长标题、多显示器、高 DPI 和所有窄屏组合没有逐项人工验收。不能将 CI 全绿解释为计划中每条人工场景均已完成。
-- v3 引擎保持只读，变更引擎不会执行；未知业务范围和不支持的解析类型显示未评估。合法孤立与循环关系不自动记为错误。
-- 接收默认关闭。Codex 需要用户客户端转发公开 App Server 通知；现有桌面会话没有自动接入。Claude hook 与真实 token 均未配置。
-- 私人笔记、会话、凭据与插件 data.json 未进入公开仓库；测试组合插件不进入产品 ZIP。没有新增大模型调用。
+安装包包括用户指南、来源接入指南、需求矩阵、视觉报告、修复记录、软件性能条件、许可、BUILD-INFO.json、CANDIDATE-VERIFICATION.json、PERFORMANCE-VERIFICATION.json 和 FILE-SHA256SUMS。录像、图集及宿主证据是同次 Actions 的配套产物。对应源码提交及 Actions 链接由包内来源文件确定，完整校验清单同时单独交付。
 
-安装、设置和卸载方式见 [使用指南](USER-GUIDE.md)，来源契约见 [接入说明](SOURCE-INTEGRATIONS.md)，实现和来源见 [架构](ARCHITECTURE.md)、[SVG 复用](SVG-REUSE.md) 与 [第三方说明](THIRD-PARTY-NOTICES.md)。候选可审阅后再落实真实库安装和来源接通。
+## 复测追踪与范围
+
+[38104735227](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38104735227) 的全部五个宿主与耐久通过，浏览器功能通过，SwiftShader 软件性能失败。独立 Mesa 测量 [38106126912](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38106126912)、[38106300672](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38106300672) 和 [38106565163](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38106565163) 在两类 CPU 上达到性能门槛；后者同时通过球体细节、库根和空范围测试。原失败记录保留，最终候选成绩以包内报告为准。软件条件详见 PERFORMANCE-CONDITIONS.md。
+
+旧 ZIP 和旧低预算测试不是本次候选证据。原 SVG SHA-256 保持 0869ac88be4692aa0568029ff9a8490e16e07a18d8e7eb9969c2ff26bba1bae2；固定 CosmoGraph、官方 UI 和蜘蛛来源持续校验。所有安装、编译、测试、截图、录像及打包在 Actions 完成。本轮不迁移或清理旧项目，真实知识库安装、真实 hooks 配置和公开发布在候选审阅之后。

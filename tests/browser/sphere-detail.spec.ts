@@ -19,4 +19,6 @@ test('Root-only and empty file scopes keep a valid renderer and usable file list
   await expect.poll(async()=>{const value=await state();return value.frames;}).toBeGreaterThan(0);expect(await state()).toMatchObject({failed:false,files:0});
   await page.getByRole('navigation',{name:'观测入口'}).getByRole('button',{name:'实体',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('根范围.md');await page.keyboard.press('Escape');
   await page.goto('/?scope=empty');await expect(page.getByText('0 文件',{exact:true})).toBeVisible();await expect.poll(async()=>{const value=await state();return value.frames;}).toBeGreaterThan(0);expect(await state()).toMatchObject({failed:false,files:0});
+  await page.evaluate(async()=>{const fixture=(window as any).fixture;await fixture.add('新世界');await fixture.add('新世界/新世界.md','# synthetic first world');});await expect(page.getByText('1 文件',{exact:true})).toBeVisible();await expect.poll(async()=>{const value=await state();return value.files;}).toBe(1);expect(await state()).toMatchObject({failed:false});
+  expect(await page.evaluate(()=>{const scene=(document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any).__cosmosScene;return scene.auraBatch.geometry.getAttribute('position').count;})).toBeGreaterThan(0);
 });

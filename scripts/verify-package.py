@@ -20,4 +20,11 @@ with zipfile.ZipFile(package) as archive:
     assert build['commit'] == candidate['commit'] == os.environ['GITHUB_SHA']
     assert build['run'] == candidate['run']
     assert candidate['verificationGate'] == 'passed'
+    assert 'software-rendering' in candidate['required']
+    performance = json.loads(archive.read('PERFORMANCE-VERIFICATION.json'))
+    assert performance['provenance']['commit'] == build['commit']
+    assert performance['provenance']['run'] == os.environ['GITHUB_RUN_ID']
+    assert 'llvmpipe' in performance['normal']['start']['driver']
+    assert performance['normal']['fps'] >= 15 and performance['stress']['fps'] >= 10
+    assert performance['interaction']['p95'] <= 200
 print(f'Verified {len(sums)} packaged files against the immutable source and complete gate')

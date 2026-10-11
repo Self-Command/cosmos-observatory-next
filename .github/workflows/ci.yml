@@ -39,6 +39,7 @@ jobs:
     needs: quality-build
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env: {FUNCTIONAL_ONLY: 'true'}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -183,8 +184,37 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with: {name: performance-evidence, path: test-results/, retention-days: 2}
+  software-rendering:
+    needs: quality-build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      SOFTWARE_GL: llvmpipe
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      GALLIUM_DRIVER: llvmpipe
+      LP_NUM_THREADS: '3'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '22'}
+      - run: npm ci --no-audit --no-fund
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with: {name: immutable-build, path: dist/}
+      - run: node scripts/verify-build.mjs
+      - run: npx playwright install --with-deps chromium
+      - run: sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libegl1 mesa-utils
+      - name: Record fixed software display and package versions
+        run: |
+          mkdir -p test-results/environment
+          lscpu --json > test-results/environment/cpu.json
+          dpkg-query -W libgl1-mesa-dri libegl1 xvfb > test-results/environment/packages.txt
+      - name: Enforce default rendering and input budgets on the immutable build
+        run: xvfb-run -a --server-args="-screen 0 1600x1200x24" npm run browser -- tests/browser/performance.spec.ts tests/browser/sphere-detail.spec.ts
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with: {name: software-rendering-evidence, path: test-results/, retention-days: 14, if-no-files-found: error}
   gate:
-    needs: [quality-build, browser, host, performance]
+    needs: [quality-build, browser, host, performance, software-rendering]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -203,16 +233,19 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with: {name: immutable-build, path: dist/}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with: {name: software-rendering-evidence, path: dist/verification/}
       - run: npm run package
         env: {VERIFICATION_GATE: passed}
       - run: python scripts/verify-package.py
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: development-review-build-not-final-candidate
+          name: installation-candidate
           path: |
             dist/cosmos-observatory-next.zip
             dist/SHA256SUMS
             dist/integrity.json
             dist/FILE-SHA256SUMS
             dist/CANDIDATE-VERIFICATION.json
-          retention-days: 2
+            dist/PERFORMANCE-VERIFICATION.json
+          retention-days: 14

@@ -8,5 +8,13 @@
     "Preserve camera during resize",
     "Dispose all original scene resources, including UnrealBloomPass targets and materials",
     "Route original native registration to customized view/settings"
+  ],
+  "adapterExtensions": [
+    "WorldScene retains SphericalGraph and Three.js renderer, lighting chunks, controls and bloom",
+    "Shared instanced SphereGeometry detail follows projected size; every budgeted file remains present",
+    "Batch real edges and auxiliary lines; cache original SVG background and soft bloom",
+    "Vertex lighting/color interpolation, uniform spider bones and reused instance buffers",
+    "Search presents direct colors before deferred soft halo; empty scopes retain valid materials",
+    "d3-force-3d Worker owns unified forces, world transforms, node drag and fixed state"
   ]
 }

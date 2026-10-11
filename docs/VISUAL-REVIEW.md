@@ -13,4 +13,14 @@
 | 弹层 | Dialog、Sheet、Select、DropdownMenu、Tooltip、搜索结果及错误／空态 |
 | 宿主 | Windows 1.13.7／1.14.4、Linux 1.14.4；插件设置页及六插件组合 |
 
-浏览器视觉流程见 `tests/browser/visual-review.spec.ts`。常规场景为 1560×1120、12px；窄窗与大字号为 560×1120、20px。独立鼠标流程使用 deviceScaleFactor=2。截图清单保存在 `visual-surface-inventory.json`，最终审阅结论及发现、修复、复测记录将在完整验证后补齐。本文件目前不表示视觉验收已经通过。
+浏览器视觉流程见 `tests/browser/visual-review.spec.ts`。常规场景为 1560×1120、12px；窄窗与大字号为 560×1120、20px。独立鼠标流程使用 deviceScaleFactor=2。截图清单保存在 `visual-surface-inventory.json`，图集的编号映射保存在 `ui-review/surface-index.json`。
+
+2026-10-11 已逐张审阅提交 `dd3e8b98cb8b57d75b76bf5655a5f3199b118758` 的 [UI 运行 38104740862](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38104740862)：95 张界面，11 张编号图集；并在 [完整运行 38104735227](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38104735227) 审阅原生 Windows 1.14.4 的控制台与设置页，以及四段实际鼠标录像的全部按时间采样帧。更早提交的 Windows 1.13.7、Linux 1.14.4 及组合宿主截图也已审阅；最终候选仍须复审其对应提交的宿主及图形证据。
+
+确认：六面板标题与边框没有拉伸；最大化内容使用新增空间；长中文标题可换行；大字号窄窗的设置头部和关闭按钮保持可达；所有设置分组及顶部入口的文字、按钮、表格和明细对齐。文件球、球壳、原配色、背景和蜘蛛保留。中心拖动、文件受力及固定、高 DPI 悬停、节点菜单、XYZ 设置和窗口缩小恢复的采样帧连贯，且各流程有真实状态断言。
+
+视觉发现已形成修复闭环：数值输入宽度不足导致四位数截断；选择按钮组首项名称错误；最大化标题被图谱选择按钮覆盖；设置长页滚动后关闭按钮不可达；原生设置卡片与宿主浅色文字对比不足。修复后在相邻的设置、弹层、面板及镜头操作中复测通过。面板滚动条按最新要求隐藏，内容仍支持滚轮、键盘及自动滚动；原生宿主样式覆盖处增加优先级，最终宿主截图继续核对。
+
+球体细节和滚动条优先级修复后，已复审 [38105619001](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38105619001) 的最新宽窄控制台与全部界面图集，以及 [38106188196](https://github.com/Self-Command/cosmos-observatory-next/actions/runs/38106188196) 的原生 Windows 控制台。近处中心球轮廓更细，远处仍是真实球体；六面板内容与标题保持清晰，滚动条隐藏。
+
+最终候选对应的完整验收完成后，还会审阅其图形、宿主及鼠标证据；交付时以同包来源和配套 Actions 清单确定最终提交。默认性能与候选门禁单独记录，视觉结论不替代其结果。
