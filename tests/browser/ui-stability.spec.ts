@@ -4,6 +4,7 @@ import {writeFile} from 'node:fs/promises';
 test.use({video:'off'});
 test('Event bursts preserve panel paint, graph buffers and responsive coverage at default settings',async({page},info)=>{
   await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();
+  await expect(page.locator('.build-identity')).toHaveText(`v0.1.1 · ${process.env.GITHUB_SHA!.slice(0,7)}`);
   await page.evaluate(async()=>{await (window as any).fixture.updateSettings({patrolPaused:true});});await page.waitForTimeout(1500);
   await page.evaluate(()=>{
     const shadow=document.querySelector('#app')!.shadowRoot!,canvas=shadow.querySelector('canvas') as any,scene=canvas.__cosmosScene;

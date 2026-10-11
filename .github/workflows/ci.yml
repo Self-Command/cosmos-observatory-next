@@ -1,6 +1,11 @@
 name: Native observatory verification
 on:
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Publish the verified installation ZIP as a GitHub Release
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths-ignore: ['docs/PROGRESS.md']
@@ -16,6 +21,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {clean: true}
+      - name: Require a clean checkout of the requested commit
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+          test ! -e dist
+          test ! -e node_modules
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with: {node-version: '22'}
       - run: npm ci --no-audit --no-fund
@@ -264,3 +276,32 @@ jobs:
             dist/PERFORMANCE-VERIFICATION.json
             dist/PANEL-VERIFICATION.json
           retention-days: 14
+  publish-release:
+    needs: review-build
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with: {name: installation-candidate, path: dist/}
+      - name: Verify the exact ZIP and its source before publication
+        run: |
+          (cd dist && sha256sum -c SHA256SUMS)
+          python scripts/verify-package.py
+      - name: Publish the verified Actions artifact without rebuilding
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(node -p "require('./manifest.json').version")
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists; refusing to replace it"
+            exit 1
+          fi
+          gh release create "$tag" \
+            dist/cosmos-observatory-next.zip dist/SHA256SUMS \
+            dist/FILE-SHA256SUMS dist/CANDIDATE-VERIFICATION.json \
+            dist/PERFORMANCE-VERIFICATION.json dist/PANEL-VERIFICATION.json \
+            --target "$GITHUB_SHA" --title "宇宙观测台 $tag" \
+            --notes-file "docs/RELEASE-$tag.md" --latest

@@ -16,6 +16,9 @@ with zipfile.ZipFile(package) as archive:
     for entry, expected in sums.items():
         assert hashlib.sha256(archive.read(entry)).hexdigest() == expected, entry
     build = json.loads(archive.read('BUILD-INFO.json'))
+    manifest = json.loads(archive.read('manifest.json'))
+    assert build['version'] == manifest['version']
+    assert build['commit'].encode() in archive.read('main.js'), 'Loaded UI must identify the packaged commit'
     candidate = json.loads(archive.read('CANDIDATE-VERIFICATION.json'))
     assert build['commit'] == candidate['commit'] == os.environ['GITHUB_SHA']
     assert build['run'] == candidate['run']

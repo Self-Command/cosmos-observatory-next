@@ -2,6 +2,8 @@
 
 更新时间：2026-10-11。公开开发仓库为 Self-Command/cosmos-observatory-next；新工作区为宇宙观测台-next。
 
+用户进一步反馈 87c87bc 安装后仍闪烁，明确授权从 Actions 干净构建并发布最新 Release。本次插件版本升为 0.1.1，底栏显示版本及构建提交，BUILD-INFO.json 记录构建时间；新增发布作业只上传同次完整门禁通过的 ZIP。用户环境的闪烁原因尚未确认，不以自动测试通过替代其实际反馈。本次验证及发布状态以对应 Actions 与 Release 为准。
+
 本轮面板重设计：用户反馈 fda950b 安装后背景仍持续闪烁。已删除面板 SVG 底板及 ResizeObserver，合并互相覆盖的背景规则，改用固定、不透底的 CSS 卡片；panelOpacity 保留配置键，界面改为“面板背景深度”。上一版 DOM 稳定及 CI 通过不能代替实际像素稳定证据。新增连续截图、透明负对照、亮色交替底层、双视图、高 DPI、拖动缩放验证；本轮结果以同包 PANEL-VERIFICATION.json 为准，构建前不声明通过。新候选仅在本轮完整门禁通过后交付。
 
 本记录随安装候选交付。50 项必需需求的实现、入口和验证路径已登记在 COMPLETION-MATRIX.md，修复闭环见 FIX-REVIEW.md。构建前的仓库文本属于待核验记录；只有同包 CANDIDATE-VERIFICATION.json 的 verificationGate=passed、源码提交相符且完整校验通过时，候选验收结论才生效。失败运行不会生成安装候选。
