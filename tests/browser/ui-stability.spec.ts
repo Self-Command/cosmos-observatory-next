@@ -7,18 +7,19 @@ test('Event bursts preserve panel paint, graph buffers and responsive coverage a
   await page.evaluate(async()=>{await (window as any).fixture.updateSettings({patrolPaused:true});});await page.waitForTimeout(1500);
   await page.evaluate(()=>{
     const shadow=document.querySelector('#app')!.shadowRoot!,canvas=shadow.querySelector('canvas') as any,scene=canvas.__cosmosScene;
-    const backgrounds=[...shadow.querySelectorAll('.reference-panel-vector svg,.reference-space svg,.reference-chrome svg')];
+    const backgrounds=[...shadow.querySelectorAll('[data-panel],.reference-space svg,.reference-chrome svg')];
     (window as any).paintProbe={backgrounds,changes:0,before:scene.getWork()};
     const observer=new MutationObserver(records=>{(window as any).paintProbe.changes+=records.length;});
-    for(const element of shadow.querySelectorAll('.reference-panel-vector,.reference-space,.reference-chrome'))observer.observe(element,{childList:true,subtree:true,attributes:true});
+    for(const element of shadow.querySelectorAll('.reference-space,.reference-chrome'))observer.observe(element,{childList:true,subtree:true,attributes:true});
+    for(const element of shadow.querySelectorAll('[data-panel]'))observer.observe(element,{attributes:true});
     (window as any).paintProbe.observer=observer;
   });
   for(let i=0;i<40;i++){await page.evaluate(i=>(window as any).fixture.event({id:`paint-${i}`,kind:'file',source:'synthetic.paint',action:'modify',status:'success',evidence:'synthetic event'}),i);await page.waitForTimeout(25);}
   const burst=await page.evaluate(()=>{
     const shadow=document.querySelector('#app')!.shadowRoot!,probe=(window as any).paintProbe,scene=(shadow.querySelector('canvas') as any).__cosmosScene;probe.observer.disconnect();
-    return {changes:probe.changes,identities:probe.backgrounds.every((element:Element)=>element.isConnected),before:probe.before,after:scene.getWork(),panelStyles:shadow.querySelectorAll('.reference-panel-vector style').length,coverageCanvases:shadow.querySelectorAll('[data-panel=coverage] canvas').length};
+    return {changes:probe.changes,identities:probe.backgrounds.every((element:Element)=>element.isConnected),before:probe.before,after:scene.getWork(),panelLayers:shadow.querySelectorAll('.reference-panel-vector').length,coverageCanvases:shadow.querySelectorAll('[data-panel=coverage] canvas').length};
   });
-  expect(burst.changes).toBe(0);expect(burst.identities).toBe(true);expect(burst.panelStyles).toBe(0);expect(burst.coverageCanvases).toBe(0);
+  expect(burst.changes).toBe(0);expect(burst.identities).toBe(true);expect(burst.panelLayers).toBe(0);expect(burst.coverageCanvases).toBe(0);
   expect(burst.after.configurations).toBe(burst.before.configurations);expect(burst.after.graphBuilds).toBe(burst.before.graphBuilds);expect(burst.after.allocations).toBe(burst.before.allocations);
   const hover=await page.evaluate(async()=>{
     const canvas=document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any,scene=canvas.__cosmosScene,rect=canvas.getBoundingClientRect(),before=scene.getWork();
