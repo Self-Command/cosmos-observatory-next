@@ -5,7 +5,7 @@ on:
       spec:
         type: choice
         default: all
-        options: [all, visual, focus, controls]
+        options: [all, visual, focus, controls, stability]
 permissions:
   contents: read
 concurrency:
@@ -31,6 +31,8 @@ jobs:
         if: inputs.spec == 'focus'
       - run: npm run browser -- tests/browser/settings-controls.spec.ts
         if: inputs.spec == 'controls'
+      - run: npm run browser -- tests/browser/ui-stability.spec.ts tests/browser/graph-interactions.spec.ts
+        if: inputs.spec == 'stability'
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
         if: inputs.spec == 'visual' || inputs.spec == 'all'
       - run: node scripts/ui-review-sheets.mjs
