@@ -6,6 +6,10 @@ on:
         type: choice
         default: performance
         options: [performance, render-diagnosis]
+      diagnostic:
+        type: choice
+        default: all
+        options: [all, trace, completed]
 permissions:
   contents: read
 concurrency:
@@ -15,6 +19,7 @@ jobs:
   default-performance:
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    env: {RENDER_DIAG: 'true'}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -23,7 +28,15 @@ jobs:
       - run: npm run check
       - run: npm run build
       - run: npx playwright install --with-deps chromium
-      - run: npm run browser -- tests/browser/${{ inputs.spec || 'performance' }}.spec.ts
+      - run: |
+          if [ "$DIAGNOSTIC" = trace ]; then
+            npm run browser -- tests/browser/render-diagnosis.spec.ts --grep 'Trace software'
+          elif [ "$DIAGNOSTIC" = completed ]; then
+            npm run browser -- tests/browser/render-diagnosis.spec.ts --grep 'Measure completed'
+          else
+            npm run browser -- tests/browser/${{ inputs.spec || 'performance' }}.spec.ts
+          fi
+        env: {DIAGNOSTIC: '${{ inputs.diagnostic || ''all'' }}'}
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with: {name: default-performance, path: test-results/, retention-days: 2}
