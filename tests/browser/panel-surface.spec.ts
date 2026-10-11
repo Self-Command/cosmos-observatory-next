@@ -1,11 +1,13 @@
 import {test,expect,type Page,type TestInfo} from '@playwright/test';
 import {writeFile} from 'node:fs/promises';
 
-test.use({video:'on'});
+test.use({video:'off'});
+test.setTimeout(180000);
 type Sample={id:string;rgb:number[];deviation:number;pixels:number};
 async function pixels(page:Page,info:TestInfo,name:string):Promise<Sample[]>{
-  const png=await page.screenshot({path:info.outputPath(`${name}.png`),scale:'css'});
-  return page.evaluate(async encoded=>{
+  const clip=await page.locator('[data-panel]').evaluateAll(panels=>{const bounds=panels.map(panel=>panel.getBoundingClientRect()),x=Math.floor(Math.min(...bounds.map(rect=>rect.left))),y=Math.floor(Math.min(...bounds.map(rect=>rect.top)));return {x,y,width:Math.ceil(Math.max(...bounds.map(rect=>rect.right)))-x,height:Math.ceil(Math.max(...bounds.map(rect=>rect.bottom)))-y};});
+  const png=await page.screenshot({path:info.outputPath(`${name}.png`),scale:'css',clip});
+  return page.evaluate(async({encoded,clip})=>{
     const image=new Image();image.src=`data:image/png;base64,${encoded}`;await image.decode();
     const buffer=document.createElement('canvas');buffer.width=image.width;buffer.height=image.height;
     const context=buffer.getContext('2d')!;context.drawImage(image,0,0);
@@ -13,11 +15,11 @@ async function pixels(page:Page,info:TestInfo,name:string):Promise<Sample[]>{
       const rect=panel.getBoundingClientRect(),rgb=getComputedStyle(panel).backgroundColor.match(/[\d.]+/g)!.slice(0,3).map(Number);
       // Blank header padding excludes the world icons' intentional glow.
       // At y=20 this is inside even the largest supported corner radius.
-      const data=context.getImageData(Math.ceil(rect.left+4),Math.ceil(rect.top+20),3,10).data;
+      const data=context.getImageData(Math.ceil(rect.left+4-clip.x),Math.ceil(rect.top+20-clip.y),3,10).data;
       let deviation=0;for(let i=0;i<data.length;i+=4)for(let channel=0;channel<3;channel++)deviation=Math.max(deviation,Math.abs(data[i+channel]-rgb[channel]));
       return {id:`${host.id}:${panel.getAttribute('data-panel')}`,rgb:[data[0],data[1],data[2]],deviation,pixels:data.length/4};
     }));
-  },png.toString('base64'));
+  },{encoded:png.toString('base64'),clip});
 }
 async function assertSurfaces(page:Page,count:number){
   const surfaces=await page.locator('[data-panel]').evaluateAll(elements=>elements.map(element=>{
@@ -31,7 +33,7 @@ async function exercise(page:Page,info:TestInfo,peer:boolean){
   await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();
   await page.evaluate(async()=>{await (window as any).fixture.updateSettings({patrolPaused:true,animationPaused:false});});
   if(peer){await page.evaluate(()=>(window as any).mountPeer());await expect(page.locator('[data-panel]')).toHaveCount(12);}
-  await page.waitForTimeout(800);await page.mouse.move(700,500);
+  await page.waitForTimeout(800);await page.mouse.move(700,500);await page.screenshot({path:info.outputPath('graph-with-panels.png'),scale:'css'});
   const count=peer?12:6,records:Record<string,unknown>[]=[],before=await page.evaluate(()=>((document.querySelector('#app')!.shadowRoot!.querySelector('canvas') as any).__cosmosScene.debug().frames));
   // First observe the actual moving graph, then use a bright alternating
   // underlay to make even slight transparency detectable in captured pixels.
