@@ -11,8 +11,9 @@ async function pixels(page:Page,info:TestInfo,name:string):Promise<Sample[]>{
     const context=buffer.getContext('2d')!;context.drawImage(image,0,0);
     return [...document.querySelectorAll('#app,#peer')].flatMap(host=>[...host.shadowRoot!.querySelectorAll('[data-panel]')].map(panel=>{
       const rect=panel.getBoundingClientRect(),rgb=getComputedStyle(panel).backgroundColor.match(/[\d.]+/g)!.slice(0,3).map(Number);
-      // The left content padding is empty for every card, font and layout.
-      const data=context.getImageData(Math.ceil(rect.left+4),Math.ceil(rect.top+44),3,20).data;
+      // Blank header padding excludes the world icons' intentional glow.
+      // At y=20 this is inside even the largest supported corner radius.
+      const data=context.getImageData(Math.ceil(rect.left+4),Math.ceil(rect.top+20),3,10).data;
       let deviation=0;for(let i=0;i<data.length;i+=4)for(let channel=0;channel<3;channel++)deviation=Math.max(deviation,Math.abs(data[i+channel]-rgb[channel]));
       return {id:`${host.id}:${panel.getAttribute('data-panel')}`,rgb:[data[0],data[1],data[2]],deviation,pixels:data.length/4};
     }));
