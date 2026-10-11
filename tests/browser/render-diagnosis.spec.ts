@@ -13,3 +13,17 @@ test('Isolate stress rendering costs in the same warmed context @diagnostic',asy
   }
   await writeFile(info.outputPath('render-diagnosis.json'),JSON.stringify(records,null,2));
 });
+
+test('Measure completed GPU work per visible draw @diagnostic',async({page},info)=>{
+  test.setTimeout(120000);await page.goto('/');await expect(page.getByText('630 文件',{exact:true})).toBeVisible();await page.evaluate(async()=>{await (window as any).fixture.seedStress();});await page.waitForTimeout(10000);
+  const measurements=await page.evaluate(async()=>{
+    const shadow=document.querySelector('#app')!.shadowRoot!,scene=(shadow.querySelector('canvas') as any).__cosmosScene,gl=scene.renderer.getContext(),records:Record<string,number[]>={};
+    const names=new Map<any,string>([[scene.coreBatch,'core'],[scene.glowBatch,'glow'],[scene.auraBatch,'aura'],[scene.anchorBatch,'anchor'],[scene.thinEdges,'edges'],[scene.auxiliaryLines,'auxiliary']]);
+    const objects:any[]=[];scene.scene.traverse((object:any)=>{if(object.isMesh||object.isLine)objects.push(object);});
+    const previous=objects.map(object=>({object,before:object.onBeforeRender,after:object.onAfterRender}));
+    for(const {object,before,after} of previous){let started=0;object.onBeforeRender=(...args:any[])=>{before.apply(object,args);gl.finish();started=performance.now();};object.onAfterRender=(...args:any[])=>{gl.finish();const key=names.get(object)??(object.isSkinnedMesh?'spider':'other');(records[key]??=[]).push(performance.now()-started);after.apply(object,args);};}
+    await new Promise(resolve=>setTimeout(resolve,6000));for(const {object,before,after} of previous){object.onBeforeRender=before;object.onAfterRender=after;}
+    const costs=Object.fromEntries(Object.entries(records).map(([key,values])=>[key,{count:values.length,mean:values.reduce((a,b)=>a+b,0)/values.length,max:Math.max(...values)}]));
+    scene.physics.pause(true,25);const sample=async()=>{const at=performance.now(),frames=scene.debug().frames;await new Promise(resolve=>setTimeout(resolve,6000));return (scene.debug().frames-frames)/((performance.now()-at)/1000);};const noPhysics=await sample();for(const element of shadow.querySelectorAll<HTMLElement>('.cosmos-root>*'))if(!element.classList.contains('cosmos-scene'))element.style.display='none';scene.labelRenderer.domElement.style.display='none';const noPhysicsOrDom=await sample();return {costs,noPhysics,noPhysicsOrDom};
+  });console.log('COMPLETED-GPU-COSTS',JSON.stringify(measurements));await writeFile(info.outputPath('completed-gpu-costs.json'),JSON.stringify(measurements,null,2));
+});
