@@ -29,7 +29,28 @@ export class WorldScene extends SphericalGraph {
   private auraBatch:THREE.InstancedMesh<THREE.BufferGeometry,THREE.ShaderMaterial>|undefined;
   private anchorBatch:THREE.InstancedMesh|undefined;private anchorGeometry=new THREE.SphereGeometry(.17,16,12);private anchorMaterial=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.3});
   private sphereGeometry=new THREE.SphereGeometry(1,6,4);private glowGeometry=new THREE.PlaneGeometry(2,2);private hitGeometry=new THREE.SphereGeometry(1,6,4);private worldAuraGeometry:THREE.BufferGeometry|undefined;
-  private coreMaterial=new THREE.MeshLambertMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:.18,transparent:true,opacity:.84});
+  private coreMaterial=new THREE.ShaderMaterial({lights:true,transparent:true,opacity:.84,toneMapped:false,uniforms:THREE.UniformsUtils.merge([THREE.UniformsLib.lights,{toneMappingExposure:{value:.9},uDisplay:{value:true}}]),vertexShader:`
+    #include <common>
+    #include <lights_pars_begin>
+    #include <tonemapping_pars_fragment>
+    #include <colorspace_pars_fragment>
+    uniform bool uDisplay;varying vec3 vLitColor;
+    void main(){
+      vec3 n=normalize(normalMatrix*normal),light=getAmbientLightIrradiance(ambientLightColor);
+      #if NUM_DIR_LIGHTS > 0
+      #pragma unroll_loop_start
+      for(int i=0;i<NUM_DIR_LIGHTS;i++){light+=directionalLights[i].color*max(dot(n,directionalLights[i].direction),0.0);}
+      #pragma unroll_loop_end
+      #endif
+      #if NUM_HEMI_LIGHTS > 0
+      #pragma unroll_loop_start
+      for(int i=0;i<NUM_HEMI_LIGHTS;i++){light+=getHemisphereLightIrradiance(hemisphereLights[i],n);}
+      #pragma unroll_loop_end
+      #endif
+      vec3 radiance=instanceColor*light*RECIPROCAL_PI+vec3(.18);
+      vLitColor=uDisplay?sRGBTransferOETF(vec4(ACESFilmicToneMapping(radiance),1.0)).rgb:radiance;
+      gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(position,1.0);
+    }`,fragmentShader:'varying vec3 vLitColor;void main(){gl_FragColor=vec4(vLitColor,.84);}'});
   private glowMaterial=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.24,depthWrite:false,blending:THREE.AdditiveBlending});
   private hitMaterial=new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false});
   private dragProxy=new THREE.Mesh(new THREE.SphereGeometry(.3,12,8),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}));
@@ -67,6 +88,9 @@ export class WorldScene extends SphericalGraph {
     this.physics=new PhysicsClient(frame=>this.acceptFrame(frame),message=>this.callbacks.error(message));
     this.tooltip=document.createElement('div');this.tooltip.className='node-hover';this.tooltip.hidden=true;this.tooltip.setAttribute('role','tooltip');canvas.parentElement?.append(this.tooltip);
     this.edgeLines=new LineSegments2(new LineSegmentsGeometry(),new LineMaterial({vertexColors:true,transparent:true,opacity:.075,depthWrite:false,linewidth:1}));this.thinEdges.frustumCulled=false;this.scene.add(this.edgeLines,this.thinEdges);
+    // Reuse Three.js's lighting/color transforms at shared vertices. Small
+    // spheres and constant-color lines otherwise repeat them per raster quad.
+    for(const material of [this.thinEdges.material,this.auxiliaryLines.material]){material.onBeforeCompile=shader=>{shader.uniforms.toneMappingExposure=this.coreMaterial.uniforms.toneMappingExposure;shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\n#include <tonemapping_pars_fragment>\n#include <colorspace_pars_fragment>').replace('#include <color_vertex>','#include <color_vertex>\nvColor.rgb=sRGBTransferOETF(vec4(ACESFilmicToneMapping(vColor.rgb),1.0)).rgb;');shader.fragmentShader=shader.fragmentShader.replace('#include <tonemapping_fragment>','').replace('#include <colorspace_fragment>','');};material.customProgramCacheKey=()=> 'cosmos-vertex-line-color';}
     this.transform.addEventListener('dragging-changed',event=>{this.orbit.enabled=!event.value;this.drag.enabled=false;if(event.value&&this.selectedWorld){const world=this.worlds.get(this.selectedWorld);if(world&&!world.layout.locked)this.beginDrag('world',this.selectedWorld,true);}});
     this.transform.addEventListener('objectChange',()=>{if(this.activeDrag?.gizmo){this.activeDrag.moved=true;this.moveWorldDrag();}});
     this.transform.addEventListener('mouseUp',()=>this.finishDrag(false));
@@ -198,7 +222,7 @@ export class WorldScene extends SphericalGraph {
     for(let index=0;index<this.order.length;index++){const offset=index*16,previous=index*3;if((matrix[offset+12]-this.bloomPositions[previous])**2+(matrix[offset+13]-this.bloomPositions[previous+1])**2+(matrix[offset+14]-this.bloomPositions[previous+2])**2>limit)return true;}
     return !!this.spider&&this.spider.position.distanceToSquared(this.bloomSpider)>limit;
   }
-  private renderFrame(){this.renderer.info.reset();this.renderer.setScissorTest(false);if(this.bloomPass.enabled&&this.needsBloom()){const edgeVisible=this.edgeLines.visible,thinVisible=this.thinEdges.visible,auxiliaryVisible=this.auxiliaryLines.visible;this.edgeLines.visible=false;this.thinEdges.visible=false;this.auxiliaryLines.visible=false;try{this.composer.render();}finally{this.edgeLines.visible=edgeVisible;this.thinEdges.visible=thinVisible;this.auxiliaryLines.visible=auxiliaryVisible;}this.bloomOverlayMaterial.uniforms.toneMappingExposure.value=Number(this.settings.exposure);this.renderer.setRenderTarget(this.bloomColorTarget);this.bloomColorQuad.render(this.renderer);this.backdropDirty=true;this.lastBloomBake=performance.now();this.bloomDirty=false;this.lastBloomTime=this.animationTime;this.bloomPositions=new Float32Array(this.order.length*3);const matrix=this.coreBatch!.instanceMatrix.array;for(let index=0;index<this.order.length;index++)for(let axis=0;axis<3;axis++)this.bloomPositions[index*3+axis]=matrix[index*16+12+axis];if(this.spider)this.bloomSpider.copy(this.spider.position);}
+  private renderFrame(){this.renderer.info.reset();this.renderer.setScissorTest(false);this.coreMaterial.uniforms.toneMappingExposure.value=Number(this.settings.exposure);if(this.bloomPass.enabled&&this.needsBloom()){const edgeVisible=this.edgeLines.visible,thinVisible=this.thinEdges.visible,auxiliaryVisible=this.auxiliaryLines.visible;this.edgeLines.visible=false;this.thinEdges.visible=false;this.auxiliaryLines.visible=false;this.coreMaterial.uniforms.uDisplay.value=false;try{this.composer.render();}finally{this.coreMaterial.uniforms.uDisplay.value=true;this.edgeLines.visible=edgeVisible;this.thinEdges.visible=thinVisible;this.auxiliaryLines.visible=auxiliaryVisible;}this.bloomOverlayMaterial.uniforms.toneMappingExposure.value=Number(this.settings.exposure);this.renderer.setRenderTarget(this.bloomColorTarget);this.bloomColorQuad.render(this.renderer);this.backdropDirty=true;this.lastBloomBake=performance.now();this.bloomDirty=false;this.lastBloomTime=this.animationTime;this.bloomPositions=new Float32Array(this.order.length*3);const matrix=this.coreBatch!.instanceMatrix.array;for(let index=0;index<this.order.length;index++)for(let axis=0;axis<3;axis++)this.bloomPositions[index*3+axis]=matrix[index*16+12+axis];if(this.spider)this.bloomSpider.copy(this.spider.position);}
     if(this.backdropDirty){this.renderer.setRenderTarget(this.backdropTarget);this.renderer.clear();this.renderer.autoClear=false;try{if(this.settings.background&&this.backgroundTexture)this.backgroundQuad.render(this.renderer);if(this.bloomPass.enabled)this.bloomOverlay.render(this.renderer);}finally{this.renderer.autoClear=true;}this.backdropFramebuffer=this.renderer.getContext().getParameter(this.renderer.getContext().FRAMEBUFFER_BINDING) as WebGLFramebuffer;this.backdropDirty=false;}
     this.renderer.setRenderTarget(null);const gl=this.renderer.getContext() as WebGL2RenderingContext;gl.bindFramebuffer(gl.READ_FRAMEBUFFER,this.backdropFramebuffer);gl.blitFramebuffer(0,0,this.canvas.width,this.canvas.height,0,0,this.canvas.width,this.canvas.height,gl.COLOR_BUFFER_BIT,gl.NEAREST);gl.bindFramebuffer(gl.READ_FRAMEBUFFER,null);
     if(!this.blitVerified){this.blitVerified=true;const error=gl.getError();if(error!==gl.NO_ERROR){this.renderFailed=true;this.callbacks.error(`三维背景合成失败（WebGL ${error}），请恢复图谱。文件列表与证据仍可使用。`);return;}}
