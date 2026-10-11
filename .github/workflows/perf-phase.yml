@@ -10,6 +10,10 @@ on:
         type: choice
         default: all
         options: [all, trace, completed]
+      runner:
+        type: choice
+        default: ubuntu-latest
+        options: [ubuntu-latest, ubuntu-24.04-arm]
 permissions:
   contents: read
 concurrency:
@@ -17,7 +21,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   default-performance:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     timeout-minutes: 12
     env: {RENDER_DIAG: 'true'}
     steps:
