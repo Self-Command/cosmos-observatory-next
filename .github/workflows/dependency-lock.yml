@@ -1,5 +1,11 @@
 name: Update dependency lock in Actions
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      verification:
+        type: choice
+        default: phase
+        options: [phase, ci]
 permissions:
   contents: write
   actions: write
@@ -23,4 +29,4 @@ jobs:
             git commit -m 'Register pinned dependency lock and scoped official portals in Actions'
             git push
           fi
-          gh workflow run phase.yml --ref main
+          gh workflow run "${{ inputs.verification || 'phase' }}.yml" --ref main

@@ -1,25 +1,21 @@
 import {test,expect,type Page,type TestInfo} from '@playwright/test';
 import {writeFile} from 'node:fs/promises';
+import {PNG} from 'pngjs';
 
 test.use({video:'off'});
 test.setTimeout(180000);
 type Sample={id:string;rgb:number[];deviation:number;pixels:number};
 async function pixels(page:Page,info:TestInfo,name:string):Promise<Sample[]>{
-  const clip=await page.locator('[data-panel]').evaluateAll(panels=>{const bounds=panels.map(panel=>panel.getBoundingClientRect()),x=Math.floor(Math.min(...bounds.map(rect=>rect.left))),y=Math.floor(Math.min(...bounds.map(rect=>rect.top)));return {x,y,width:Math.ceil(Math.max(...bounds.map(rect=>rect.right)))-x,height:Math.ceil(Math.max(...bounds.map(rect=>rect.bottom)))-y};});
+  const metadata=await page.locator('[data-panel]').evaluateAll(panels=>panels.map(panel=>{const rect=panel.getBoundingClientRect();return {id:`${(panel.getRootNode() as ShadowRoot).host.id}:${panel.getAttribute('data-panel')}`,left:rect.left,top:rect.top,right:rect.right,bottom:rect.bottom,rgb:getComputedStyle(panel).backgroundColor.match(/[\d.]+/g)!.slice(0,3).map(Number)};}));
+  const x=Math.floor(Math.min(...metadata.map(rect=>rect.left))),y=Math.floor(Math.min(...metadata.map(rect=>rect.top))),clip={x,y,width:Math.ceil(Math.max(...metadata.map(rect=>rect.right)))-x,height:Math.ceil(Math.max(...metadata.map(rect=>rect.bottom)))-y};
   const png=await page.screenshot({path:info.outputPath(`${name}.png`),scale:'css',clip});
-  return page.evaluate(async({encoded,clip})=>{
-    const image=new Image();image.src=`data:image/png;base64,${encoded}`;await image.decode();
-    const buffer=document.createElement('canvas');buffer.width=image.width;buffer.height=image.height;
-    const context=buffer.getContext('2d')!;context.drawImage(image,0,0);
-    return [...document.querySelectorAll('#app,#peer')].flatMap(host=>[...host.shadowRoot!.querySelectorAll('[data-panel]')].map(panel=>{
-      const rect=panel.getBoundingClientRect(),rgb=getComputedStyle(panel).backgroundColor.match(/[\d.]+/g)!.slice(0,3).map(Number);
-      // Blank header padding excludes the world icons' intentional glow.
-      // At y=20 this is inside even the largest supported corner radius.
-      const data=context.getImageData(Math.ceil(rect.left+4-clip.x),Math.ceil(rect.top+20-clip.y),3,10).data;
-      let deviation=0;for(let i=0;i<data.length;i+=4)for(let channel=0;channel<3;channel++)deviation=Math.max(deviation,Math.abs(data[i+channel]-rgb[channel]));
-      return {id:`${host.id}:${panel.getAttribute('data-panel')}`,rgb:[data[0],data[1],data[2]],deviation,pixels:data.length/4};
-    }));
-  },{encoded:png.toString('base64'),clip});
+  // Decode in the test process, away from both busy WebGL contexts.
+  const decoded=PNG.sync.read(png);
+  return metadata.map(rect=>{
+    const left=Math.ceil(rect.left+4-clip.x),top=Math.ceil(rect.top+20-clip.y),offset=(top*decoded.width+left)*4;let deviation=0;
+    for(let row=0;row<10;row++)for(let column=0;column<3;column++)for(let channel=0;channel<3;channel++)deviation=Math.max(deviation,Math.abs(decoded.data[((top+row)*decoded.width+left+column)*4+channel]-rect.rgb[channel]));
+    return {id:rect.id,rgb:[decoded.data[offset],decoded.data[offset+1],decoded.data[offset+2]],deviation,pixels:30};
+  });
 }
 async function assertSurfaces(page:Page,count:number){
   const surfaces=await page.locator('[data-panel]').evaluateAll(elements=>elements.map(element=>{
