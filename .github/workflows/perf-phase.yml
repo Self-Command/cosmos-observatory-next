@@ -1,60 +1,41 @@
-name: Default performance iteration
-on:
-  workflow_dispatch:
-    inputs:
-      spec:
-        type: choice
-        default: performance
-        options: [performance, render-diagnosis]
-      diagnostic:
-        type: choice
-        default: all
-        options: [all, trace, completed]
-      runner:
-        type: choice
-        default: ubuntu-latest
-        options: [ubuntu-latest, ubuntu-24.04-arm]
-      driver:
-        type: choice
-        default: swiftshader
-        options: [swiftshader, llvmpipe]
-permissions:
-  contents: read
-concurrency:
-  group: perf-${{ github.ref }}-${{ inputs.spec || 'performance' }}
-  cancel-in-progress: true
+name: Same machine UI fix comparison
+on: workflow_dispatch
+permissions: {contents: read}
 jobs:
-  default-performance:
-    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
-    timeout-minutes: 12
-    env: {RENDER_DIAG: 'true'}
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SOFTWARE_GL: llvmpipe
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      GALLIUM_DRIVER: llvmpipe
+      LP_NUM_THREADS: '3'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {fetch-depth: 0}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with: {node-version: '22'}
       - run: npm ci --no-audit --no-fund
-      - run: npm run check
-      - run: npm run build
       - run: npx playwright install --with-deps chromium
-      - name: Install Mesa software display
-        if: inputs.driver == 'llvmpipe'
-        run: sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libegl1 mesa-utils
-      - run: |
-          if [ "$SOFTWARE_GL" = llvmpipe ]; then
-            xvfb-run -a --server-args="-screen 0 1600x1200x24" npm run browser -- tests/browser/performance.spec.ts tests/browser/sphere-detail.spec.ts
-          elif [ "$DIAGNOSTIC" = trace ]; then
-            npm run browser -- tests/browser/render-diagnosis.spec.ts --grep 'Trace software'
-          elif [ "$DIAGNOSTIC" = completed ]; then
-            npm run browser -- tests/browser/render-diagnosis.spec.ts --grep 'Measure completed'
-          else
-            npm run browser -- tests/browser/${{ inputs.spec || 'performance' }}.spec.ts
-          fi
-        env:
-          DIAGNOSTIC: '${{ inputs.diagnostic || ''all'' }}'
-          SOFTWARE_GL: '${{ inputs.driver || ''swiftshader'' }}'
-          LIBGL_ALWAYS_SOFTWARE: '1'
-          GALLIUM_DRIVER: llvmpipe
-          LP_NUM_THREADS: '3'
+      - run: sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libegl1 mesa-utils
+      - name: Measure both source versions with identical tests and hardware
+        run: |
+          mkdir -p test-results/comparison
+          for variant in before after; do
+            if [ "$variant" = before ]; then revision=d7ab952b06a5bafb826719b32988f91fb158caf4; else revision=fda950b4bb880366795fa3b3f07296d70238c8eb; fi
+            git restore --source "$revision" -- src
+            npm run check
+            npm run build
+            set +e
+            xvfb-run -a --server-args="-screen 0 1600x1200x24" npm run browser -- tests/browser/performance.spec.ts
+            result=$?
+            set -e
+            mkdir -p "test-results/comparison/$variant"
+            cp -r test-results/browser/. "test-results/comparison/$variant/"
+            printf '%s\n' "$revision" > "test-results/comparison/$variant/source-commit.txt"
+            printf '%s\n' "$result" > "test-results/comparison/$variant/test-exit.txt"
+            test -n "$(find "test-results/comparison/$variant" -name default-performance.json -print -quit)"
+          done
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
-        with: {name: default-performance, path: test-results/, retention-days: 2}
+        with: {name: same-machine-comparison, path: test-results/comparison/, retention-days: 2}
