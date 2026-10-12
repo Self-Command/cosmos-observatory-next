@@ -6,7 +6,7 @@ vi.mock('../../src/host/Coordinator',()=>({Coordinator:class {stopped=false;star
 import { FileSystemAdapter } from 'obsidian';
 import ObservatoryPlugin from '../../src/main';
 function deferred(){let resolve!:()=>void;const promise=new Promise<void>(done=>{resolve=done;});return {promise,resolve};}
-function plugin(){return new ObservatoryPlugin({vault:{adapter:new FileSystemAdapter('/synthetic-vault'),configDir:'.obsidian'}} as any,{id:'cosmos-observatory-next'} as any);}
+function plugin(){return new ObservatoryPlugin({vault:{adapter:new FileSystemAdapter(),configDir:'.obsidian'}} as any,{id:'cosmos-observatory-next'} as any);}
 beforeEach(()=>{runtime.instances=[];runtime.start=()=>Promise.resolve();runtime.close=()=>Promise.resolve();});
 describe('Panel-owned observation',()=>{
   it('enables without starting a scanner and shares it until the final panel closes',async()=>{
