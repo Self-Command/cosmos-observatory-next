@@ -86,7 +86,7 @@ export class Coordinator {
     const ids=new Set(projection.files.map(file=>file.id));for(const id of Object.keys(this.state.nodes??{}))if(!ids.has(id))delete this.state.nodes![id];
     this.syncDependencies();await this.evaluateBusiness();if(this.stopped)return;await this.discoverAssets();if(this.stopped)return;this.updateSources();
     const covered=new Set(this.realtime.model.coveredPaths);this.realtime.worlds=this.realtime.worlds.map(world=>{const members=projection.files.filter(file=>file.worldId===world.id);return {...world,coverage:members.length&&members.every(file=>covered.has(file.path))?'evaluated':this.realtime.model.status==='pending'?'pending':'unassessed'};});
-    if(this.realtime.revision>1)for(const file of projection.files){const old=before.get(file.id);if(old?.version!==file.version||old?.path!==file.path||old?.cacheReady!==file.cacheReady)this.patrol.changed(file);}
+    if(this.realtime.revision>1||before.size)for(const file of projection.files){const old=before.get(file.id);if(old?.version!==file.version||old?.path!==file.path||old?.cacheReady!==file.cacheReady)this.patrol.changed(file);}
     this.emit();await this.persist(false);
   }).catch(error=>{this.report(String(error));if(full)throw error;});}
   private async modelText(filePath:string){if(this.stopped)throw Error('观测面板已关闭');const file=this.app.vault.getAbstractFileByPath(filePath),version=file instanceof TFile?`${file.stat.mtime}:${file.stat.size}`:'';const cached=this.modelTexts.get(filePath);if(version&&cached?.version===version)return cached.text;const text=await this.app.vault.adapter.read(filePath);this.modelTexts.set(filePath,{version,text});return text;}
