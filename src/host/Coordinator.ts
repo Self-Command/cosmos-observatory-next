@@ -28,7 +28,7 @@ export class Coordinator {
   private queue=new PQueue({concurrency:1});private mutations=new PQueue({concurrency:1});private index=new VaultEntryIndex();
   private patrol:Patrol;private history!:HistoryStore;private logger:ReturnType<typeof pino>|undefined;private logStream:ReturnType<typeof createStream>|undefined;private receiver:EventReceiver|undefined;
   private receiverSignature='';private logSignature='';private started=false;private stopped=false;
-  private startup:Promise<void>|undefined;private destroying:Promise<void>|undefined;
+  private startup:Promise<void>|undefined;private destroying:Promise<void>|undefined;private readyForSnapshot=false;
   private historyTimer:ReturnType<typeof setInterval>|undefined;private extensionTimer:ReturnType<typeof setInterval>|undefined;private refreshDebounced:ReturnType<typeof debounce>;
   private seenEvents=new Set<string>();private settingsInput:PersistentState['settings']|undefined;private settingsCache=defaults();
   private modelTexts=new Map<string,{version:string;text:string}>();private schema:Record<string,any>|undefined;
@@ -61,7 +61,7 @@ export class Coordinator {
     add('vault',vault.on('delete',file=>{const id=this.state.identities[file.path];this.index.remove(file.path);forgetIdentity(this.state,file.path);this.changed('delete',file.path,id);}));
     add('metadataCache',this.app.metadataCache.on('changed',file=>{this.index.upsert(this.raw(file));this.refreshDebounced();}));
     add('metadataCache',this.app.metadataCache.on('resolved',()=>this.refreshDebounced()));
-    await this.refresh();if(this.stopped)return;if(previous){const old=new Map(previous.files.map(file=>[file.path,file.version])),now=new Map(this.realtime.files.map(file=>[file.path,file.version]));this.event({kind:'system',source:'local.recovery',action:'offline.net-change',status:'unknown',evidence:`关闭期间净变化：新增 ${[...now.keys()].filter(file=>!old.has(file)).length}、修改 ${[...now].filter(([file,version])=>old.has(file)&&old.get(file)!==version).length}、删除 ${[...old.keys()].filter(file=>!now.has(file)).length}；期间过程未知`});}
+    await this.refresh();if(this.stopped)return;this.readyForSnapshot=true;if(previous){const old=new Map(previous.files.map(file=>[file.path,file.version])),now=new Map(this.realtime.files.map(file=>[file.path,file.version]));this.event({kind:'system',source:'local.recovery',action:'offline.net-change',status:'unknown',evidence:`关闭期间净变化：新增 ${[...now.keys()].filter(file=>!old.has(file)).length}、修改 ${[...now].filter(([file,version])=>old.has(file)&&old.get(file)!==version).length}、删除 ${[...old.keys()].filter(file=>!now.has(file)).length}；期间过程未知`});}
     this.patrol.configure(this.settings);this.patrol.start();await this.configureReceiver();this.configureHistory();
   }
   private changed(action:string,filePath:string,fileId=this.state.identities[filePath],previousPath?:string){if(filePath.startsWith(this.app.vault.configDir+'/plugins/cosmos-observatory-next/'))return;this.event({kind:'file',source:'obsidian.vault',action,path:filePath,previousPath,fileId,status:'success',evidence:'Vault 事件；无智能体归因'});this.refreshDebounced();}
@@ -137,5 +137,5 @@ export class Coordinator {
   }
   private async persist(sample:boolean){if(!this.history)return;try{await this.history.save(this.state,sample?{...this.realtime,at:Date.now(),space:{...this.getLayoutState(),worlds:{...this.observedWorlds,...this.state.worlds}}}:undefined,Number(this.settings.retentionDays),Number(this.settings.historyMiB)-this.logBudgetMiB()-this.recoveryMiB());}catch(error){this.report(`状态写入失败: ${String(error)}`);}}
   destroy(){if(this.destroying)return this.destroying;this.stopped=true;this.notify.cancel();this.patrol.destroy();this.refreshDebounced.cancel();if(this.historyTimer)clearInterval(this.historyTimer);if(this.extensionTimer)clearInterval(this.extensionTimer);this.historyTimer=undefined;this.extensionTimer=undefined;for(const {owner,ref} of this.refs)this.app[owner].offref(ref);this.refs=[];this.listeners.clear();return this.destroying=this.finishDestroy();}
-  private async finishDestroy(){await this.startup?.catch(()=>{});await this.receiver?.close();this.receiver=undefined;await this.queue.onIdle();await this.mutations.onIdle();await this.patrol.flush();await this.persist(true);await this.history?.flush();this.logStream?.end();}
+  private async finishDestroy(){await this.startup?.catch(()=>{});await this.receiver?.close();this.receiver=undefined;await this.queue.onIdle();await this.mutations.onIdle();await this.patrol.flush();if(this.readyForSnapshot)await this.persist(true);await this.history?.flush();this.logStream?.end();}
 }
