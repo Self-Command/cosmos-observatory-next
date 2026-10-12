@@ -25,7 +25,7 @@ export class Patrol {
       if(current.size>Number(this.settings.maxReadKiB)*1024){base.status='unassessed';base.unassessed=['文件超过读取上限'];this.count('skipped');}
       else if(!supportsSyntax(current.extension)){base.status='unassessed';base.unassessed=['该文件类型未提供静态解析器；未读取'];this.count('skipped');}
       else{
-        const text=await this.port.read(current);base.read='read';base.bytesRead=new TextEncoder().encode(text).byteLength;this.count('reads');base.hash=await this.port.hash(text);Object.assign(base,inspectSyntax(current,text));
+        const text=await this.port.read(current);if(epoch!==this.epoch||this.stopped){this.count('discarded');return;}base.read='read';base.bytesRead=new TextEncoder().encode(text).byteLength;this.count('reads');base.hash=await this.port.hash(text);if(epoch!==this.epoch||this.stopped){this.count('discarded');return;}Object.assign(base,inspectSyntax(current,text));
         if(current.extension==='md'&&!current.cacheReady){base.unassessed.push('Obsidian 链接缓存待就绪');base.status='pending';}
         else{for(const link of this.port.unresolved(current))base.issues.push({rule:'obsidian.links',message:`未解析链接: ${link}`});base.status=base.issues.length?'issues':base.unassessed.length?'unassessed':'pass';}
       }
