@@ -2,7 +2,7 @@
 
 这是一个 Obsidian 桌面插件。浏览器测试入口复用生产 Dashboard、WorldScene、Patrol 与解析器；它的合成数据不替代宿主测试。
 
-`src/main.ts` 继承完整 CosmoGraph 原生注册类，`ObservatoryView` 继承原 ItemView。视图使用 Shadow DOM、React 和官方 shadcn/ui，避免 Tailwind 和 Radix 弹层影响笔记或其他插件。每个 vault 共享一个随插件启用运行的 Coordinator，多视图各有独立 WebGL、物理 Worker 和弹层；关闭视图释放对应图形资源，观察器、巡查、历史与接收端口继续运行，插件卸载时统一释放。
+`src/main.ts` 继承完整 CosmoGraph 原生注册类，`ObservatoryView` 继承原 ItemView。视图使用 Shadow DOM、React 和官方 shadcn/ui，避免 Tailwind 和 Radix 弹层影响笔记或其他插件。每个打开的观测视图持有独立使用记录；首个视图启动 vault 共享的 Coordinator，多视图各有独立 WebGL、物理 Worker 和弹层。最后一个视图关闭时立即停止观察器、巡查、历史轮询和接收端口。初始化也受关闭状态约束；再次打开须等待旧实例完成状态保存，随后创建新实例。插件启用本身只注册入口，不扫描知识库。
 
 ```mermaid
 flowchart LR

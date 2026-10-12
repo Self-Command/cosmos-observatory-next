@@ -6,7 +6,7 @@ Claude 支持 SessionStart / SessionEnd / PreToolUse / PostToolUse / PostToolUse
 
 Codex 适配 item/started 与 item/completed；只观察公开通知中 commandExecution、fileChange、mcpToolCall 与 dynamicToolCall 的生命周期。fileChange 完成时可投影 changes[].path；不接收 diff、命令、日志、消息 delta 或推理。该桥接需要由用户拥有的 App Server 客户端转发通知，不能凭这些接口访问 Codex 桌面已有会话。没有转发时显示未接入。
 
-生产接收只监听 127.0.0.1，默认关闭，端口、事件容量和限流都可在设置中调整。令牌在当前 vault 插件 state/receiver-token 文件，由本地桥接读取，不导出、不放在命令参数中。
+生产接收只监听 127.0.0.1，默认关闭，端口、事件容量和限流都可在设置中调整。接收端仅在观测面板打开时运行；关闭最后一个面板后停止接收，不补造关闭期间的来源事件。令牌在当前 vault 插件 state/receiver-token 文件，由本地桥接读取，不导出、不放在命令参数中。
 
 ```text
 node bridge.mjs claude-hook <vault绝对路径> <receiver-token文件路径> <端口>

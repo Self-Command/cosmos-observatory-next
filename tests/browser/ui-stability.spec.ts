@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 import {writeFile} from 'node:fs/promises';
-import manifest from '../../..//manifest.json';
+import manifest from '../../manifest.json' with {type:'json'};
 
 test.use({video:'off'});
 test('Event bursts preserve panel paint, graph buffers and responsive coverage at default settings',async({page},info)=>{
