@@ -1,0 +1,20 @@
+import './guard.mjs';
+import {ZipArchive} from 'archiver';
+import {createWriteStream} from 'node:fs';
+import {readFile,writeFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+
+if(process.env.USER_REQUESTED_NO_TESTS!=='true')throw Error('This packaging route requires an explicit request to omit tests');
+const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+const build=JSON.parse(await readFile('dist/plugin/BUILD-INFO.json','utf8'));
+const status={version:build.version,commit:build.commit,run:build.run,builtAt:build.builtAt,testsRun:false,verificationGate:'not-run',reason:'User requested immediate correction and a build for their manual trial without automated tests'};
+await writeFile('dist/plugin/HOTFIX-STATUS.json',JSON.stringify(status,null,2));
+const files=JSON.parse(await readFile('dist/integrity.json','utf8'));
+files['HOTFIX-STATUS.json']=hash(await readFile('dist/plugin/HOTFIX-STATUS.json'));
+await writeFile('dist/plugin/FILE-SHA256SUMS',Object.entries(files).sort(([a],[b])=>a.localeCompare(b)).map(([file,sum])=>`${sum}  ${file}`).join('\n')+'\n');
+const output=createWriteStream('dist/cosmos-observatory-next.zip');
+const archive=new ZipArchive({zlib:{level:9}});
+const done=new Promise((resolve,reject)=>{output.on('close',resolve);output.on('error',reject);archive.on('error',reject);});
+archive.pipe(output);archive.directory('dist/plugin',false);await archive.finalize();await done;
+for(const file of ['HOTFIX-STATUS.json','FILE-SHA256SUMS'])await writeFile('dist/'+file,await readFile('dist/plugin/'+file));
+await writeFile('dist/SHA256SUMS',(await Promise.all(['cosmos-observatory-next.zip','HOTFIX-STATUS.json','FILE-SHA256SUMS'].map(async file=>`${hash(await readFile('dist/'+file))}  ${file}`))).join('\n')+'\n');

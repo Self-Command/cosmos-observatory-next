@@ -1,0 +1,40 @@
+name: Immediate hotfix build without tests
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PLUGIN_ONLY: 'true'
+      USER_REQUESTED_NO_TESTS: 'true'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {clean: true}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '22'}
+      - run: npm ci --no-audit --no-fund
+      - name: Compile the plugin only
+        run: npm run build
+      - name: Package the manual trial build with honest status
+        run: node scripts/package-hotfix.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: manual-trial-hotfix
+          path: |
+            dist/cosmos-observatory-next.zip
+            dist/SHA256SUMS
+            dist/FILE-SHA256SUMS
+            dist/HOTFIX-STATUS.json
+          retention-days: 14
+      - name: Publish for the user's immediate trial
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(node -p "require('./manifest.json').version")
+          gh release create "$tag" dist/cosmos-observatory-next.zip \
+            dist/SHA256SUMS dist/FILE-SHA256SUMS dist/HOTFIX-STATUS.json \
+            --target "$GITHUB_SHA" --title "宇宙观测台 $tag · 闪烁修复试用版" \
+            --notes-file "docs/RELEASE-$tag.md" --prerelease
