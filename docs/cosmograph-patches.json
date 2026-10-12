@@ -15,6 +15,7 @@
     "Batch real edges and auxiliary lines; cache original SVG background and soft bloom",
     "Vertex lighting/color interpolation, uniform spider bones and reused instance buffers",
     "Search presents direct colors before deferred soft halo; empty scopes retain valid materials",
+    "Urgent 0.1.2: preserve completed drawing buffer, resize only on actual dimensions/DPR changes and present cached background through Three.js FullScreenQuad instead of raw framebuffer blit",
     "d3-force-3d Worker owns unified forces, world transforms, node drag and fixed state"
   ]
 }
